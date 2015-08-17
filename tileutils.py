@@ -24,10 +24,10 @@ def find_any_adjacent_clear_tile(c, blocking=True):
 		new_coords = tuple(new_coords)
 		
 		if blocking:
-			if TILEMAP[new_coords].isclear:
+			if TILEMAP[new_coords].isclear():
 				return new_coords # only return if you found a clear tile
 		else:
-			if TILEMAP[new_coords].isclear and TILEMAP[new_coords].nograss:
+			if TILEMAP[new_coords].isclear() and not TILEMAP[new_coords].hasgrass:
 				return new_coords
 	# if no free tiles (100 tries should be enough to find one)...
 	return c
@@ -35,14 +35,14 @@ def find_any_adjacent_clear_tile(c, blocking=True):
 
 def find_any_clear_tile(blocking=True):
 	coords = ( random.randrange(MAP_SIZE), random.randrange(MAP_SIZE) )
-	if not TILEMAP[coords].isclear:
+	if not TILEMAP[coords].isclear():
 		for j in range(100):
 			coords = ( random.randrange(MAP_SIZE), random.randrange(MAP_SIZE) ) 
 			if blocking:
-				if TILEMAP[coords].isclear:
+				if TILEMAP[coords].isclear():
 					return coords
 			else:
-				if TILEMAP[coords].isclear and TILEMAP[coords].nograss:
+				if TILEMAP[coords].isclear() and not TILEMAP[coords].hasgrass:
 					return coords
 		raise IndexError("Tried to find clear tile, but couldn't!")
 	return coords

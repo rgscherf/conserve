@@ -2,7 +2,7 @@
 
 from kivy.animation import Animation
 
-from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, GAMEINFO
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, GAMEINFO, REMOVE
 from tileutils import *
 from tile import Sprite
 
@@ -17,29 +17,31 @@ class AIAnimal(Sprite):
 		super(AIAnimal, self).__init__(source=source, pos=pos)
 		global ENTITY_ID
 		global ENTITY_HASH
+		global TILEMAP
 		self.lastcoords              = (999,999)
 		self.coords                  = pixel_to_coord(pos)
 		self.entity_id               = ENTITY_ID
 		ENTITY_ID                    += 1
 		ENTITY_HASH[self.entity_id]  = self
-		TILEMAP[self.coords].isclear = False
+		TILEMAP[self.coords].move_into()
 
 	def update(self):
-		TILEMAP[self.coords].isclear = True
-		new_coords                   = self.decide_direction()
-		new_pixels                   = coord_to_pixel(new_coords)
-		self.coords                  = new_coords
+		global TILEMAP
+		TILEMAP[self.coords].move_outof()
+		new_coords  = self.decide_direction()
+		new_pixels  = coord_to_pixel(new_coords)
+		self.coords = new_coords
 		
 		if self.coords == self.lastcoords:
 			new_coords  = find_any_adjacent_clear_tile(self.coords)
 			self.coords = new_coords
 			new_pixels  = coord_to_pixel(self.coords)
-		
-		self.lastcoords             = self.coords
-		TILEMAP[new_coords].isclear = False
+			
+		self.lastcoords = self.coords
 		
 		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
 		anim.start(self)
+		TILEMAP[new_coords].move_into()
 
 	def find_nearest(self, ent_type, mindist=1, maxdist=MAP_SIZE):
 		entities_by_distance = []
@@ -54,7 +56,7 @@ class AIAnimal(Sprite):
 			if i[0] > maxdist:
 				raise NotImplementedError("find_nearest couldn't find any entities")
 
-	def select_movement(self, ent, direction="toward"):
+	def select_movement(self, ent, direction="toward", ignore_entities=False):
 		"""
 			Select direction in which to move, based on the target's position relative to target.
 			-direction- is a string, either "toward" or "away". Commands assume direction=="toward".
@@ -82,7 +84,7 @@ class AIAnimal(Sprite):
 			if direction == "away":
 				c = (c[0] * -1, c[1] * -1)
 			candidate = add_coords(self.coords, c)
-			if TILEMAP[candidate].isclear:
+			if TILEMAP[candidate].isclear(ignore_entities):
 				choices_ret.append(candidate)
 		try:		
 			return random.choice(choices_ret)
@@ -91,7 +93,7 @@ class AIAnimal(Sprite):
 
 
 	def decide_direction(self):
-		raise NotImplementedError("No decide_direction() for {}".format(self.entity_type))
+		raise NotImplementedError("decide_direction() is not defined for {}".format(self.entity_type))
 
 
 class Pig(AIAnimal):
@@ -115,11 +117,38 @@ class Pig(AIAnimal):
 class Wolf(AIAnimal):
 	def __init__(self, pos):
 		super(Wolf, self).__init__(source=self.animal_sprites["wolf"], pos=pos)
-		self.entity_type = "Wolf"
-		self.sightrange  = 7
+		self.entity_type          = "Wolf"
+		self.sightrange           = 7
+		self.collided             = False
+		self.collided_with_key    = None
+		self.collided_with_entity = None
 
 	def decide_direction(self):
-		target      = self.find_nearest("Pig")
-		self.coords = self.select_movement(target)
-		new_coords  = self.select_movement(target)
+		target     = self.find_nearest("Pig")
+		new_coords = self.select_movement(target, ignore_entities=True)
 		return new_coords
+
+	def update(self):
+		super(Wolf, self).update()
+		self.collided = self.check_for_collision()
+		if self.collided:
+			self.resolve_collision()
+		else:
+			super(Wolf, self).update()
+			self.collided = self.check_for_collision()
+			if self.collided:
+				self.resolve_collision()
+
+	def check_for_collision(self):
+		for k, e in ENTITY_HASH.items():
+			if self.collide_widget(e) and e.entity_type != self.entity_type and e.entity_type != "Player":
+				self.collided_with_entity = e
+				self.collided_with_key    = k
+				return True
+		return False
+
+	def resolve_collision(self):
+		global REMOVE
+		self.parent.remove_widget(self.collided_with_entity)		
+		REMOVE.append(self.collided_with_key) 
+		# NB that killed object could still be called (bc REMOVE is purged at end of turn)

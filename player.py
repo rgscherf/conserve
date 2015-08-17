@@ -12,22 +12,24 @@ class Player(Sprite):
 		super(Player, self).__init__(source="images/player.png", pos=pos)
 		global ENTITY_ID
 		global ENTITY_HASH
+		global TILEMAP
 		self.entity_type             = "Player"
 		self.coords                  = pixel_to_coord(pos)
 		self.entity_id               = ENTITY_ID
 		ENTITY_ID                    += 1
 		ENTITY_HASH[self.entity_id]  = self
-		TILEMAP[self.coords].isclear = False
+		TILEMAP[self.coords].move_into()
 
 	def update(self, key):
+		global TILEMAP
 		new_coords                   = self.validate_move(key)
-		TILEMAP[self.coords].isclear = True
-		TILEMAP[new_coords].isclear  = False
+		TILEMAP[self.coords].move_outof()
 		self.coords                  = new_coords
 		
 		new_pixels = coord_to_pixel(new_coords)
 		anim       = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
 		anim.start(self)
+		TILEMAP[self.coords].move_into()
 
 	def validate_move(self, d):
 		moves = { "w": (0,1)
@@ -40,7 +42,7 @@ class Player(Sprite):
 			new_coords = add_coords(self.coords, moves[d])
 		except KeyError:
 			return self.coords
-		if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear:
+		if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear():
 			return new_coords
 		else:
 			return self.coords

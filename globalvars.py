@@ -4,3 +4,4 @@ ENTITY_ID = 1
 ENTITY_HASH = {}
 TILEMAP = {}
 GAMEINFO = {}
+REMOVE = []

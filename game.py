@@ -30,10 +30,10 @@ import random
 class Game(Widget):
 	def __init__(self):
 		super(Game, self).__init__()
-		self.tilesize      = TILE_SIZE
-		self.sidelength    = MAP_SIZE
-		self.size          = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
-		self.can_take_turn = True
+		self.tilesize            = TILE_SIZE
+		self.sidelength          = MAP_SIZE
+		self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
+		self.can_take_turn       = True
 		
 		self.keyboard = Window.request_keyboard(self.keyboard_close, self)
 		self.keyboard.bind(on_key_down=self.keydown)		
@@ -90,6 +90,7 @@ class Game(Widget):
 	def spawn_player(self):
 		global GAMEINFO
 		c = find_any_clear_tile(self.sidelength)
+		TILEMAP[c].move_into
 		self.player = Player(pos=coord_to_pixel(c))
 		self.add_widget(self.player)
 		GAMEINFO["playerid"] = self.player.entity_id
@@ -97,6 +98,7 @@ class Game(Widget):
 	def spawn_AIAnimal(self, entityclass, num):
 		for i in range(num):
 			c = find_any_clear_tile(self.sidelength)
+			TILEMAP[c].move_into
 			if c[0] < 998:
 				p = entityclass(pos=coord_to_pixel(c))
 			else:
@@ -111,11 +113,15 @@ class Game(Widget):
 			self.update(keycode[1])
 	
 	def update(self, keycode):
+		global REMOVE
 		self.can_take_turn = False
 		self.player.update(keycode)
 		for k,v in ENTITY_HASH.items():
 			if v.entity_type != "Player":
 				v.update()
+		for i in REMOVE:
+			del ENTITY_HASH[i]
+		REMOVE = []		
 		self.key = None
 		self.can_take_turn = True
 
