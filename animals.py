@@ -9,6 +9,10 @@ from tile import Sprite
 import random
 
 class AIAnimal(Sprite):
+	animal_sprites = { "pig": "images/pig.png"
+					 , "wolf": "images/snake.png"
+					 }
+
 	def __init__(self, source, pos):
 		super(AIAnimal, self).__init__(source=source, pos=pos)
 		global ENTITY_ID
@@ -91,8 +95,8 @@ class AIAnimal(Sprite):
 
 
 class Pig(AIAnimal):
-	def __init__(self, source, pos):
-		super(Pig, self).__init__(source=source, pos=pos)
+	def __init__(self, pos):
+		super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
 		self.entity_type = "Pig"
 		self.sightrange  = 3		
 
@@ -109,8 +113,8 @@ class Pig(AIAnimal):
 
 
 class Wolf(AIAnimal):
-	def __init__(self, source, pos):
-		super(Wolf, self).__init__(source=source, pos=pos)
+	def __init__(self, pos):
+		super(Wolf, self).__init__(source=self.animal_sprites["wolf"], pos=pos)
 		self.entity_type = "Wolf"
 		self.sightrange  = 7
 

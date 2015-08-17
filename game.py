@@ -47,8 +47,8 @@ class Game(Widget):
 			self.add_widget(TILEMAP[i])
 		
 		self.spawn_player()
-		self.spawn_AIAnimal(Pig, "pig.png", 10)
-		self.spawn_AIAnimal(Wolf, "snake.png", 2)
+		self.spawn_AIAnimal(Pig, 10)
+		self.spawn_AIAnimal(Wolf, 2)
 
 	def generate_map(self):
 		global TILEMAP
@@ -90,15 +90,15 @@ class Game(Widget):
 	def spawn_player(self):
 		global GAMEINFO
 		c = find_any_clear_tile(self.sidelength)
-		self.player = Player(source="player.png", pos=coord_to_pixel(c))
+		self.player = Player(pos=coord_to_pixel(c))
 		self.add_widget(self.player)
 		GAMEINFO["playerid"] = self.player.entity_id
 
-	def spawn_AIAnimal(self, entityclass, sourceimage, num):
+	def spawn_AIAnimal(self, entityclass, num):
 		for i in range(num):
 			c = find_any_clear_tile(self.sidelength)
 			if c[0] < 998:
-				p = entityclass(source=sourceimage, pos=coord_to_pixel(c))
+				p = entityclass(pos=coord_to_pixel(c))
 			else:
 				raise NotImplementedError("tried to spawn {} but no free tiles".format(entity))
 			self.add_widget(p)

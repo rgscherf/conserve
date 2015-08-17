@@ -10,11 +10,11 @@ class Sprite(Image):
 
 class Tile(Widget):
 	# spritesheet dimensions are 968 x 526
-	tiledict = { "bg": "atlas://cell_tiles/background"
-			   , "water": "atlas://cell_tiles/water"
-			   , "forest": "atlas://cell_tiles/forest"
-			   , "grass": "grass_long.png"
-			   , "grass_cut": "grass_long_cut.png"
+	tiledict = { "bg": "atlas://images/cell_tiles/background"
+			   , "water": "atlas://images/cell_tiles/water"
+			   , "forest": "atlas://images/cell_tiles/forest"
+			   , "grass": "images/grass_long.png"
+			   , "grass_cut": "images/grass_long_cut.png"
 			   }
 
 	def __init__(self, pos):

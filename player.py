@@ -8,8 +8,8 @@ from tile import Sprite
 
 
 class Player(Sprite):
-	def __init__(self, source, pos):
-		super(Player, self).__init__(source=source, pos=pos)
+	def __init__(self, pos):
+		super(Player, self).__init__(source="images/player.png", pos=pos)
 		global ENTITY_ID
 		global ENTITY_HASH
 		self.entity_type             = "Player"
