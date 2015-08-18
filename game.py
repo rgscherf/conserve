@@ -22,6 +22,7 @@ import random
 #########
 
 # window layout (menu bar above/below viewport?)
+# need to implement wolf resting time
 
 #########
 # GAME 
@@ -34,6 +35,8 @@ class Game(Widget):
 		self.sidelength          = MAP_SIZE
 		self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
 		self.can_take_turn       = True
+		self.move_group_a = {}
+		self.move_group_b = {}
 		
 		self.keyboard = Window.request_keyboard(self.keyboard_close, self)
 		self.keyboard.bind(on_key_down=self.keydown)		
@@ -113,15 +116,23 @@ class Game(Widget):
 			self.update(keycode[1])
 	
 	def update(self, keycode):
-		global REMOVE
 		self.can_take_turn = False
 		self.player.update(keycode)
+
 		for k,v in ENTITY_HASH.items():
-			if v.entity_type != "Player":
-				v.update()
-		for i in REMOVE:
-			del ENTITY_HASH[i]
-		REMOVE = []		
+			if v.entity_type == "wolf":
+				self.move_group_a[k] = v
+			if v.entity_type == "pig":
+				self.move_group_b[k] = v
+		
+		for k, v in self.move_group_a.items():
+			v.update()
+		for k, v in self.move_group_b.items():
+			v.update()
+
+		self.move_group_a = {}
+		self.move_group_b = {}
+
 		self.key = None
 		self.can_take_turn = True
 

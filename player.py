@@ -13,7 +13,7 @@ class Player(Sprite):
 		global ENTITY_ID
 		global ENTITY_HASH
 		global TILEMAP
-		self.entity_type             = "Player"
+		self.entity_type             = "player"
 		self.coords                  = pixel_to_coord(pos)
 		self.entity_id               = ENTITY_ID
 		ENTITY_ID                    += 1

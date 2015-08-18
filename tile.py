@@ -35,10 +35,10 @@ class Tile(Widget):
 		self._hasentity = False
 
 	def isclear(self, ignore_entities=False):
-		if not ignore_entities:
-			return not (self._hasforeground or self._hasentity)
+		if ignore_entities:
+			return not self._hasforeground			
 		else:
-			return not self._hasforeground
+			return not (self._hasforeground or self._hasentity)
 
 	def add_foreground(self, foreground, blocking=True):
 		if blocking:

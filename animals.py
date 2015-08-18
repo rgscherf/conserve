@@ -2,11 +2,12 @@
 
 from kivy.animation import Animation
 
-from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, GAMEINFO, REMOVE
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, REMOVE
 from tileutils import *
 from tile import Sprite
 
 import random
+
 
 class AIAnimal(Sprite):
 	animal_sprites = { "pig": "images/pig.png"
@@ -45,15 +46,16 @@ class AIAnimal(Sprite):
 
 	def find_nearest(self, search_term, search_type="entity", mindist=1, maxdist=MAP_SIZE*TILE_SIZE):
 		items_by_distance = []
+		my_center = add_pixels(coord_to_pixel(self.coords), (TILE_SIZE/2, TILE_SIZE/2))
 		if search_type == "entity":
 			for k,v in ENTITY_HASH.items():
 				if v.entity_type == search_term:
-					tup = (distance_between_pixels(self.center, v.center), v)
+					tup = (distance_between_pixels(my_center, v.center), v)
 					items_by_distance.append(tup)
 		elif search_type == "terrain":
 			for k,v in TILEMAP.items():
 				if v.foreground_type == search_term:
-					tup = (distance_between_pixels(self.center, v.center), v)
+					tup = (distance_between_pixels(my_center, v.center), v)
 					items_by_distance.append(tup)
 		items_by_distance.sort()
 		for i in items_by_distance:
@@ -62,7 +64,7 @@ class AIAnimal(Sprite):
 			if i[0] > maxdist:
 				raise NotImplementedError("find_nearest() couldn't find matching entities")
 
-	def select_movement(self, ent, direction="toward", ignore_entities=False):
+	def select_movement(self, ent, direction="toward", ignore_entities=False, can_rest=True):
 		"""
 			Select direction in which to move, based on the target's position relative to target.
 			-direction- is a string, either "toward" or "away". Commands assume direction=="toward".
@@ -75,15 +77,19 @@ class AIAnimal(Sprite):
 		right   = (1,0)
 		nothing = (0,0)
 		
-		if self.center_y == ent.center_y:
-			choices.append(nothing)
-		else:
-			choices.append(down) if self.center_y > ent.center_y else choices.append(up)
+		if can_rest:
+			if self.center_y == ent.center_y or self.center_x == ent.center_x:
+				choices.append(nothing)
 		
-		if self.center_x == ent.center_x:
-			choices.append(nothing)
+		if self.center_y > ent.center_y:
+			choices.append(down)  
 		else:
-			choices.append(left) if self.center_x > ent.center_x else choices.append(right)
+			choices.append(up)
+		
+		if self.center_x > ent.center_x:
+			choices.append(left) 
+		else:
+			choices.append(right)
 
 		choices_ret = []
 		for c in choices:
@@ -105,13 +111,18 @@ class AIAnimal(Sprite):
 class Pig(AIAnimal):
 	def __init__(self, pos):
 		super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
-		self.entity_type    = "Pig"
+		self.entity_type    = "pig"
 		self.sightrange     = 5
 		self.terrain_target = None
 		self.reached_target = False
 
 	def decide_direction(self):
-		nearest_wolf = self.find_nearest("Wolf")
+		"""
+			If I see a wolf, run away.
+			Else, find the nearest water and move toward it.
+			Once I get there, start moving randomly.
+		"""
+		nearest_wolf = self.find_nearest("wolf")
 		if distance_between_centers(self, nearest_wolf) <= (self.sightrange * TILE_SIZE):
 			return self.select_movement(nearest_wolf, "away")
 		else:
@@ -128,38 +139,65 @@ class Pig(AIAnimal):
 class Wolf(AIAnimal):
 	def __init__(self, pos):
 		super(Wolf, self).__init__(source=self.animal_sprites["wolf"], pos=pos)
-		self.entity_type          = "Wolf"
+		self.entity_type          = "wolf"
 		self.sightrange           = 999
-		self.collided             = False
+		self.num_moves            = 2
+		self.resting              = False
 		self.collided_with_key    = None
 		self.collided_with_entity = None
-
-	def decide_direction(self):
-		target     = self.find_nearest("Pig")
-		new_coords = self.select_movement(target, ignore_entities=True)
-		return new_coords
+		self.lastcoords           = None
 
 	def update(self):
-		super(Wolf, self).update()
-		self.collided = self.check_for_collision()
-		if self.collided:
-			self.resolve_collision()
-		else:
-			super(Wolf, self).update()
-			self.collided = self.check_for_collision()
-			if self.collided:
-				self.resolve_collision()
+		global TILEMAP
+		TILEMAP[self.coords].move_outof()
+
+		self.lastcoords = self.coords
+
+		movelog = {}
+		for i in range(self.num_moves):
+			if not self.resting:
+				self.coords = self.decide_direction()
+				movelog[i] = self.coords
+				TILEMAP[self.coords].move_into()
+
+				if self.check_for_collision():
+					self.resting = True
+					self.resolve_collision()
+
+		if self.coords == self.lastcoords and not self.resting:
+			self.coords = find_any_adjacent_clear_tile(self.coords)
+		
+		self.resting = False
+		
+		first_move_px  = coord_to_pixel(movelog[0])
+		try:
+			second_move_px = coord_to_pixel(movelog[1])
+		except KeyError:
+			second_move_px = first_move_px
+
+		anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.1) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.1)
+		anim.start(self)	
+
+	def decide_direction(self):
+		"""
+			Move toward the nearest pig. (I move 2 tiles per turn)
+			If I move on top of my target, stop and also skip my next move.
+		"""
+		target     = self.find_nearest("pig")
+		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False)
+		return new_coords
 
 	def check_for_collision(self):
 		for k, e in ENTITY_HASH.items():
-			if self.collide_widget(e) and e.entity_type != self.entity_type and e.entity_type != "Player":
+			if self.coords == e.coords and e.entity_type != self.entity_type and e.entity_type != "player":
 				self.collided_with_entity = e
 				self.collided_with_key    = k
 				return True
 		return False
 
 	def resolve_collision(self):
-		global REMOVE
-		self.parent.remove_widget(self.collided_with_entity)		
-		REMOVE.append(self.collided_with_key) 
+		global ENTITY_HASH
+		del self.parent.move_group_b[self.collided_with_key]
+		del ENTITY_HASH[self.collided_with_key]
+		self.collided_with_entity.color = (1,1,1,0.5)
 		# NB that killed object could still be called (bc REMOVE is purged at end of turn)

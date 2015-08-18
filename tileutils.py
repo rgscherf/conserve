@@ -89,6 +89,12 @@ def add_coords(a, b):
 	checked_y = added_y if added_y >= 0 and added_y < MAP_SIZE else a[1]
 	return (checked_x, checked_y)
 
+def add_pixels(a, b):
+	added_x   = a[0] + b[0]
+	added_y   = a[1] + b[1]
+	checked_x = added_x if added_x >= 0 and added_x < (MAP_SIZE * TILE_SIZE) else a[0]
+	checked_y = added_y if added_y >= 0 and added_y < (MAP_SIZE * TILE_SIZE) else a[1]
+	return (checked_x, checked_y)
 
 def is_coord_inside_map(c):
 	x_inside = c[0] >= 0 and c[0] < MAP_SIZE
