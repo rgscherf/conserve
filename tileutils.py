@@ -27,8 +27,7 @@ def find_any_adjacent_clear_tile(c, blocking=True):
 			if TILEMAP[new_coords].isclear():
 				return new_coords # only return if you found a clear tile
 		else:
-			if TILEMAP[new_coords].isclear() and not TILEMAP[new_coords].hasgrass:
-				return new_coords
+			raise NotImplementedError("no behavior for nonblocking")
 	# if no free tiles (100 tries should be enough to find one)...
 	return c
 

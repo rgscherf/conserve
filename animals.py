@@ -43,18 +43,24 @@ class AIAnimal(Sprite):
 		anim.start(self)
 		TILEMAP[new_coords].move_into()
 
-	def find_nearest(self, ent_type, mindist=1, maxdist=MAP_SIZE):
-		entities_by_distance = []
-		for k,v in ENTITY_HASH.items():
-			if v.entity_type == ent_type:
-				tup = (distance_between_pixels(self.center, v.center), v)
-				entities_by_distance.append(tup)
-		entities_by_distance.sort()
-		for i in entities_by_distance:
+	def find_nearest(self, search_term, search_type="entity", mindist=1, maxdist=MAP_SIZE*TILE_SIZE):
+		items_by_distance = []
+		if search_type == "entity":
+			for k,v in ENTITY_HASH.items():
+				if v.entity_type == search_term:
+					tup = (distance_between_pixels(self.center, v.center), v)
+					items_by_distance.append(tup)
+		elif search_type == "terrain":
+			for k,v in TILEMAP.items():
+				if v.foreground_type == search_term:
+					tup = (distance_between_pixels(self.center, v.center), v)
+					items_by_distance.append(tup)
+		items_by_distance.sort()
+		for i in items_by_distance:
 			if i[0] >= mindist:
 				return i[1]
 			if i[0] > maxdist:
-				raise NotImplementedError("find_nearest couldn't find any entities")
+				raise NotImplementedError("find_nearest() couldn't find matching entities")
 
 	def select_movement(self, ent, direction="toward", ignore_entities=False):
 		"""
@@ -86,7 +92,7 @@ class AIAnimal(Sprite):
 			candidate = add_coords(self.coords, c)
 			if TILEMAP[candidate].isclear(ignore_entities):
 				choices_ret.append(candidate)
-		try:		
+		try:
 			return random.choice(choices_ret)
 		except IndexError:
 			return self.coords
@@ -99,26 +105,31 @@ class AIAnimal(Sprite):
 class Pig(AIAnimal):
 	def __init__(self, pos):
 		super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
-		self.entity_type = "Pig"
-		self.sightrange  = 3		
+		self.entity_type    = "Pig"
+		self.sightrange     = 5
+		self.terrain_target = None
+		self.reached_target = False
 
 	def decide_direction(self):
-		player = ENTITY_HASH[GAMEINFO["playerid"]]
 		nearest_wolf = self.find_nearest("Wolf")
 		if distance_between_centers(self, nearest_wolf) <= (self.sightrange * TILE_SIZE):
 			return self.select_movement(nearest_wolf, "away")
-		if distance_between_centers(self, player) <= ( (self.sightrange * TILE_SIZE) / 2 ):
-			return self.select_movement(player, "away")
 		else:
-			target = self.find_nearest("Pig")
-			return self.select_movement(target)
+			if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
+				self.reached_target = True
+			if not self.terrain_target and not self.reached_target:
+				self.terrain_target = self.find_nearest("water", search_type="terrain")
+				target = self.terrain_target
+			else:
+				target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
+			return self.select_movement(target)				
 
 
 class Wolf(AIAnimal):
 	def __init__(self, pos):
 		super(Wolf, self).__init__(source=self.animal_sprites["wolf"], pos=pos)
 		self.entity_type          = "Wolf"
-		self.sightrange           = 7
+		self.sightrange           = 999
 		self.collided             = False
 		self.collided_with_key    = None
 		self.collided_with_entity = None

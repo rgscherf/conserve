@@ -19,47 +19,42 @@ class Tile(Widget):
 
 	def __init__(self, pos):
 		super(Tile, self).__init__()
-		self.pos        = pos
-		self._isclear   = True
-		self.hasgrass   = False
-		self.foreground = None
+		self.pos             = pos
+		self._hasforeground  = False
+		self._hasentity      = False
+		self.foreground      = None
+		self.foreground_type = None
 		
 		self.bg = Sprite(source=self.tiledict["bg"], pos=self.pos)
 		self.add_widget(self.bg)
 
 	def move_into(self):
-		self._isclear = False
-		# if not self.nograss:
-		# 	self.remove_widget(self.grass)
-		# 		self.add_widget(self.grass)
+		self._hasentity = True
 
 	def move_outof(self):
-		self._isclear = True
-		if self.hasgrass:
-			self.hasgrass = False
-			self.remove_widget(self.grass)
-			self.grass = Sprite(source=self.tiledict["grass_cut"], pos=self.pos)
-			self.add_widget(self.grass)
+		self._hasentity = False
 
 	def isclear(self, ignore_entities=False):
 		if not ignore_entities:
-			return self._isclear
+			return not (self._hasforeground or self._hasentity)
 		else:
-			return False if self.foreground else True
+			return not self._hasforeground
 
 	def add_foreground(self, foreground, blocking=True):
 		if blocking:
 			if self.foreground:
 				self.remove_widget(self.foreground)
-			self._isclear    = False
-			self.foreground = Sprite(source=self.tiledict[foreground], pos=self.pos)
+			self._hasforeground  = True
+			self.foreground      = Sprite(source=self.tiledict[foreground], pos=self.pos)
+			self.foreground_type = foreground
 			self.add_widget(self.foreground)
 		else:
-			self.hasgrass = True
-			self.grass    = Sprite(source=self.tiledict[foreground], pos=self.pos)
-			self.add_widget(self.grass)
+			# self.hasgrass = True
+			# self.grass    = Sprite(source=self.tiledict[foreground], pos=self.pos)
+			# self.add_widget(self.grass)
+			pass
 
 	def clear_foreground(self):
 		if self.foreground:
 			self.remove_widget(self.foreground)
-		self._isclear = True
+		self._hasforeground = False
