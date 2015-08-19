@@ -27,22 +27,7 @@ class AIAnimal(Sprite):
 		TILEMAP[self.coords].move_into()
 
 	def update(self):
-		global TILEMAP
-		TILEMAP[self.coords].move_outof()
-		new_coords  = self.decide_direction()
-		new_pixels  = coord_to_pixel(new_coords)
-		self.coords = new_coords
-		
-		if self.coords == self.lastcoords:
-			new_coords  = find_any_adjacent_clear_tile(self.coords)
-			self.coords = new_coords
-			new_pixels  = coord_to_pixel(self.coords)
-			
-		self.lastcoords = self.coords
-		
-		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
-		anim.start(self)
-		TILEMAP[new_coords].move_into()
+		raise NotImplementedError("no update() defined for {}").format(self.entity_type)
 
 	def find_nearest(self, search_term, search_type="entity", mindist=1, maxdist=MAP_SIZE*TILE_SIZE):
 		items_by_distance = []
@@ -67,8 +52,10 @@ class AIAnimal(Sprite):
 	def select_movement(self, ent, direction="toward", ignore_entities=False, can_rest=True):
 		"""
 			Select direction in which to move, based on the target's position relative to target.
-			-direction- is a string, either "toward" or "away". Commands assume direction=="toward".
-			If direction=="away", command is reversed before it is returned.
+			ent: target entity (remember, you can pass a Tile if you want to target a coordinate)
+			direction: "toward"/"away"; if "away", chosen direction will be flipped before returning.
+			ignore_entities: if True, tile collision check will ignore the presence of entities (this is to enable predators)
+			can_rest: if True, the entity can choose not to move (this messes with predator AI)
 		"""
 		choices = []
 		up      = (0,1)
@@ -104,10 +91,6 @@ class AIAnimal(Sprite):
 			return self.coords
 
 
-	def decide_direction(self):
-		raise NotImplementedError("decide_direction() is not defined for {}".format(self.entity_type))
-
-
 class Pig(AIAnimal):
 	def __init__(self, pos):
 		super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
@@ -115,6 +98,24 @@ class Pig(AIAnimal):
 		self.sightrange     = 5
 		self.terrain_target = None
 		self.reached_target = False
+
+	def update(self):
+		global TILEMAP
+		TILEMAP[self.coords].move_outof()
+		new_coords  = self.decide_direction()
+		new_pixels  = coord_to_pixel(new_coords)
+		self.coords = new_coords
+		
+		if self.coords == self.lastcoords:
+			new_coords  = find_any_adjacent_clear_tile(self.coords)
+			self.coords = new_coords
+			new_pixels  = coord_to_pixel(self.coords)
+			
+		self.lastcoords = self.coords
+		
+		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
+		anim.start(self)
+		TILEMAP[new_coords].move_into()
 
 	def decide_direction(self):
 		"""
@@ -150,7 +151,6 @@ class Wolf(AIAnimal):
 	def update(self):
 		global TILEMAP
 		TILEMAP[self.coords].move_outof()
-
 		self.lastcoords = self.coords
 
 		movelog = {}
@@ -200,4 +200,3 @@ class Wolf(AIAnimal):
 		del self.parent.move_group_b[self.collided_with_key]
 		del ENTITY_HASH[self.collided_with_key]
 		self.collided_with_entity.color = (1,1,1,0.5)
-		# NB that killed object could still be called (bc REMOVE is purged at end of turn)
