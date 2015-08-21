@@ -116,16 +116,8 @@ class Game(Widget):
 	def update(self, keycode):
 		self.can_take_turn = False
 		self.player.update(keycode)
-		remove_arrows = []
-		for i, e in enumerate(PLAYER_ENTITIES):
-			remove_index = e.update(i)
-			remove_arrows.append(remove_index)
-
-		remove_arrows.sort()
-		remove_arrows.reverse()
-		for i in remove_arrows:
-			if i:
-				del PLAYER_ENTITIES[i]
+		self.move_player_entities()
+		
 
 		for k, v in ENTITY_HASH.items():
 			if v.entity_type == "wolf":
@@ -138,6 +130,18 @@ class Game(Widget):
 		self.key = None
 		self.can_take_turn = True
 
+	def move_player_entities(self):
+		global PLAYER_ENTITIES
+		remove_arrows = []
+		for i, e in enumerate(PLAYER_ENTITIES):
+			remove_index = e.update(i)
+			remove_arrows.append(remove_index)
+
+		remove_arrows.sort()
+		remove_arrows.reverse()
+		for i in remove_arrows:
+			if i:
+				del PLAYER_ENTITIES[i]
 
 #############
 # MENU WIDGET

@@ -2,7 +2,7 @@
 
 from kivy.animation import Animation
 
-from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, REMOVE
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP
 from tileutils import *
 from tile import Sprite
 
@@ -92,6 +92,9 @@ class AIAnimal(Sprite):
 
 	def die(self):
 		global ENTITY_HASH
+		global TILEMAP
+
+		TILEMAP[self.coords].move_outof()
 		del ENTITY_HASH[self.entity_id]
 		self.color = (1,1,1,0.5)
 
@@ -120,7 +123,7 @@ class Pig(AIAnimal):
 		
 		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
 		anim.start(self)
-		TILEMAP[new_coords].move_into()
+		TILEMAP[self.coords].move_into()
 
 	def decide_direction(self):
 		"""
@@ -129,7 +132,7 @@ class Pig(AIAnimal):
 			Once I get there, start moving randomly.
 		"""
 		nearest_wolf = self.find_nearest("wolf")
-		if distance_between_centers(self, nearest_wolf) <= (self.sightrange * TILE_SIZE):
+		if nearest_wolf and distance_between_centers(self, nearest_wolf) <= (self.sightrange * TILE_SIZE):
 			return self.select_movement(nearest_wolf, "away")
 		else:
 			if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
@@ -155,16 +158,17 @@ class Wolf(AIAnimal):
 
 	def update(self):
 		global TILEMAP
-		TILEMAP[self.coords].move_outof()
+
 		self.lastcoords = self.coords
 
 		movelog = {}
 		for i in range(self.num_moves):
 			if not self.resting:
+				TILEMAP[self.coords].move_outof()
 				self.coords = self.decide_direction()
-				movelog[i] = self.coords
 				TILEMAP[self.coords].move_into()
-
+				movelog[i] = self.coords
+				
 				collided = check_for_collision(self)
 				if collided:
 					self.resting = True
@@ -181,7 +185,7 @@ class Wolf(AIAnimal):
 		except KeyError:
 			second_move_px = first_move_px
 
-		anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.1) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.1)
+		anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
 		anim.start(self)	
 
 	def decide_direction(self):
@@ -190,5 +194,7 @@ class Wolf(AIAnimal):
 			If I move on top of my target, stop and also skip my next move.
 		"""
 		target     = self.find_nearest("pig")
-		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False)
+		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False) if target else find_any_adjacent_clear_tile()
 		return new_coords
+
+
