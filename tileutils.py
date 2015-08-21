@@ -89,6 +89,7 @@ def add_coords(a, b):
 	checked_y = added_y if added_y >= 0 and added_y < MAP_SIZE else a[1]
 	return (checked_x, checked_y)
 
+
 def add_pixels(a, b):
 	added_x   = a[0] + b[0]
 	added_y   = a[1] + b[1]
@@ -96,7 +97,15 @@ def add_pixels(a, b):
 	checked_y = added_y if added_y >= 0 and added_y < (MAP_SIZE * TILE_SIZE) else a[1]
 	return (checked_x, checked_y)
 
+
 def is_coord_inside_map(c):
 	x_inside = c[0] >= 0 and c[0] < MAP_SIZE
 	y_inside = c[1] >= 0 and c[1] < MAP_SIZE
 	return x_inside and y_inside
+
+
+def check_for_collision(me):
+	for k, e in ENTITY_HASH.items():
+		if me.coords == e.coords and e.entity_type != me.entity_type and e.entity_type != "player":
+			return e
+	return None

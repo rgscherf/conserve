@@ -90,6 +90,11 @@ class AIAnimal(Sprite):
 		except IndexError:
 			return self.coords
 
+	def die(self):
+		global ENTITY_HASH
+		del ENTITY_HASH[self.entity_id]
+		self.color = (1,1,1,0.5)
+
 
 class Pig(AIAnimal):
 	def __init__(self, pos):
@@ -160,9 +165,10 @@ class Wolf(AIAnimal):
 				movelog[i] = self.coords
 				TILEMAP[self.coords].move_into()
 
-				if self.check_for_collision():
+				collided = check_for_collision(self)
+				if collided:
 					self.resting = True
-					self.resolve_collision()
+					collided.die()
 
 		if self.coords == self.lastcoords and not self.resting:
 			self.coords = find_any_adjacent_clear_tile(self.coords)
@@ -186,17 +192,3 @@ class Wolf(AIAnimal):
 		target     = self.find_nearest("pig")
 		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False)
 		return new_coords
-
-	def check_for_collision(self):
-		for k, e in ENTITY_HASH.items():
-			if self.coords == e.coords and e.entity_type != self.entity_type and e.entity_type != "player":
-				self.collided_with_entity = e
-				self.collided_with_key    = k
-				return True
-		return False
-
-	def resolve_collision(self):
-		global ENTITY_HASH
-		del self.parent.move_group_b[self.collided_with_key]
-		del ENTITY_HASH[self.collided_with_key]
-		self.collided_with_entity.color = (1,1,1,0.5)

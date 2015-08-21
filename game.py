@@ -35,8 +35,6 @@ class Game(Widget):
 		self.sidelength          = MAP_SIZE
 		self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
 		self.can_take_turn       = True
-		self.move_group_a = {}
-		self.move_group_b = {}
 		
 		self.keyboard = Window.request_keyboard(self.keyboard_close, self)
 		self.keyboard.bind(on_key_down=self.keydown)		
@@ -118,20 +116,24 @@ class Game(Widget):
 	def update(self, keycode):
 		self.can_take_turn = False
 		self.player.update(keycode)
+		remove_arrows = []
+		for i, e in enumerate(PLAYER_ENTITIES):
+			remove_index = e.update(i)
+			remove_arrows.append(remove_index)
 
-		for k,v in ENTITY_HASH.items():
+		remove_arrows.sort()
+		remove_arrows.reverse()
+		for i in remove_arrows:
+			if i:
+				del PLAYER_ENTITIES[i]
+
+		for k, v in ENTITY_HASH.items():
 			if v.entity_type == "wolf":
-				self.move_group_a[k] = v
-			if v.entity_type == "pig":
-				self.move_group_b[k] = v
-		
-		for k, v in self.move_group_a.items():
-			v.update()
-		for k, v in self.move_group_b.items():
-			v.update()
+				v.update()
 
-		self.move_group_a = {}
-		self.move_group_b = {}
+		for k, v in ENTITY_HASH.items():
+			if v.entity_type == "pig":
+				v.update()
 
 		self.key = None
 		self.can_take_turn = True
