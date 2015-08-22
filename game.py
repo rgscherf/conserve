@@ -42,7 +42,6 @@ class Game(Widget):
 		self.generate_map()
 		self.spawn_feature(feature="forest", numfeatures=int(math.floor((self.sidelength**2) / 12)), spawn_chance=0.6)
 		self.spawn_feature(feature="water", numfeatures=int(math.floor((self.sidelength**2) / 40)), spawn_chance=0.4 )
-		# self.spawn_feature(feature="grass", numfeatures=int(math.floor((self.sidelength**2) / 10)), spawn_chance=0.95, blocking=False)
 
 		for i in TILEMAP:
 			self.add_widget(TILEMAP[i])
@@ -91,7 +90,7 @@ class Game(Widget):
 	def spawn_player(self):
 		global GAMEINFO
 		c = find_any_clear_tile(self.sidelength)
-		TILEMAP[c].move_into
+		TILEMAP[c].move_into()
 		self.player = Player(pos=coord_to_pixel(c))
 		self.add_widget(self.player)
 		GAMEINFO["playerid"] = self.player.entity_id
@@ -99,7 +98,7 @@ class Game(Widget):
 	def spawn_AIAnimal(self, entityclass, num):
 		for i in range(num):
 			c = find_any_clear_tile(self.sidelength)
-			TILEMAP[c].move_into
+			TILEMAP[c].move_into()
 			if c[0] < 998:
 				p = entityclass(pos=coord_to_pixel(c))
 			else:
