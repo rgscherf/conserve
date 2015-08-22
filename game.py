@@ -132,6 +132,7 @@ class Game(Widget):
 
 	def move_player_entities(self):
 		global PLAYER_ENTITIES
+		global PLAYER_ENTITIES_INACTIVE
 		remove_arrows = []
 		for i, e in enumerate(PLAYER_ENTITIES):
 			remove_index = e.update(i)
@@ -141,6 +142,7 @@ class Game(Widget):
 		remove_arrows.reverse()
 		for i in remove_arrows:
 			if i:
+				PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
 				del PLAYER_ENTITIES[i]
 
 #############

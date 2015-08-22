@@ -23,7 +23,7 @@ class Player(Sprite):
 	def update(self, key):
 		global TILEMAP
 		if key in ["i", "k", "j", "l"]:
-			self.shoot_arrow(key)
+			self.shoot_dart(key)
 		else:
 			TILEMAP[self.coords].move_outof()
 			new_coords  = self.validate_move(key)
@@ -47,7 +47,8 @@ class Player(Sprite):
 			return new_coords
 		return self.coords
 
-	def shoot_arrow(self, d):
+	def shoot_dart(self, d):
+		global PLAYER_ENTITIES_INACTIVE
 		shots = { "i": ["images/arrow_up.png", (0,1)]
 				, "j": ["images/arrow_left.png", (-1,0)]		
 				, "k": ["images/arrow_down.png", (0,-1)]
@@ -60,6 +61,7 @@ class Player(Sprite):
 		index = len(PLAYER_ENTITIES) - 1
 		delete = PLAYER_ENTITIES[index].update(index)
 		if delete:
+			PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[index])
 			del PLAYER_ENTITIES[index]
 
 
@@ -91,22 +93,22 @@ class Dart(Sprite):
 	def check_coords_in_range(self):
 		if self.direction[0] != 0:
 			for x in range(1*self.dirmod, (self.direction[0] + 1)*self.dirmod):
-				# for i in PLAYER_ENTITIES:
-				# 	if i.coords == add_coords(self.coords, (self.dirmod, 0)):
-				# 		return ( (x, 0) , True)
 				tile = TILEMAP[add_coords(self.coords, (x, 0))]
 				if tile.pos == self.parent.pos:
 					continue
+				for i in PLAYER_ENTITIES_INACTIVE:
+					if i.coords == add_coords(self.coords, (x + self.dirmod, 0)):
+						return ( (x, 0), True )
 				if not tile.isclear():
 					return ( (x, 0) , True)
 		else:
 			for y in range(1*self.dirmod, (self.direction[1] + 1)*self.dirmod):
-				# for i in PLAYER_ENTITIES:
-				# 	if i.coords == add_coords(self.coords, (0, self.dirmod)):
-				# 		return ( (0, y) , True)
 				tile = TILEMAP[add_coords(self.coords, (0, y))]
 				if tile.pos == self.parent.pos:
 					continue
+				for i in PLAYER_ENTITIES_INACTIVE:
+					if i.coords == add_coords(self.coords, (0, y + self.dirmod)):
+						return ( (0, y), True )
 				if not tile.isclear():
 					return ( (0, y) , True)
 		return (self.direction, False)
