@@ -34,26 +34,28 @@ class Player(Sprite):
             anim.start(self)
 
     def validate_move(self, d):
-        moves = {"w": (0, 1)
-            , "s": (0, -1)
-            , "a": (-1, 0)
-            , "d": (1, 0)
-                 }
+        moves = {
+            "w": (0, 1),
+            "s": (0, -1),
+            "a": (-1, 0),
+            "d": (1, 0)
+            }
         try:
             new_coords = add_coords(self.coords, moves[d])
         except KeyError:
             return self.coords
-        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear():
+        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear(player=True):
             return new_coords
         return self.coords
 
     def shoot_dart(self, d):
         global PLAYER_ENTITIES_INACTIVE
-        shots = {"i": ["images/arrow_up.png", (0, 1)]
-            , "j": ["images/arrow_left.png", (-1, 0)]
-            , "k": ["images/arrow_down.png", (0, -1)]
-            , "l": ["images/arrow_right.png", (1, 0)]
-                 }
+        shots = {
+            "i": ["images/arrow_up.png", (0, 1)],
+            "j": ["images/arrow_left.png", (-1, 0)],
+            "k": ["images/arrow_down.png", (0, -1)],
+            "l": ["images/arrow_right.png", (1, 0)]
+            }
 
         dart = Dart(shots[d][0], coord_to_pixel(self.coords), shots[d][1])
         self.add_widget(dart)
@@ -61,23 +63,28 @@ class Player(Sprite):
         index = len(PLAYER_ENTITIES) - 1
         delete = PLAYER_ENTITIES[index].update(index)
         if delete:
+            TILEMAP[dart.coords].stop_dart()
             PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[index])
             del PLAYER_ENTITIES[index]
 
 
 class Dart(Sprite):
+    """
+        When a dart stops, it kills whatever it hit and also forms an impassable wall.
+        Player can walk over fallen darts to collect them.
+    """
+
     def __init__(self, source, pos, direction):
         super(Dart, self).__init__(source=source, pos=pos)
-        self.direction   = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
-        self.coords      = pixel_to_coord(self.pos)
+        self.direction = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
+        self.coords = pixel_to_coord(self.pos)
         self.entity_type = "dart"
-        self.dirmod      = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
-
+        self.dirmod = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
 
     def update(self, index):
         new_delta, did_hit = self.decide_how_far_to_travel()
-        new_coords         = add_coords(self.coords, new_delta)
-        new_pixels         = coord_to_pixel(new_coords)
+        new_coords = add_coords(self.coords, new_delta)
+        new_pixels = coord_to_pixel(new_coords)
 
         anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.05)
         anim.start(self)
@@ -88,6 +95,7 @@ class Dart(Sprite):
             collided.die()
 
         if did_hit:
+            TILEMAP[self.coords].stop_dart()
             return index
         return None
 
@@ -100,20 +108,20 @@ class Dart(Sprite):
             return ( (delta coords) , did_I_hit?)
         """
         if self.direction[0] != 0:
-            for x in range(1 * self.dirmod, self.direction[0] + (1*self.dirmod), self.dirmod):
-                coords_would_be      = add_coords(self.coords, (x, 0))
-                next_coords_would_be = add_coords(self.coords, (x+(1*self.dirmod), 0))
-                ret = ( (x, 0), True)
+            for x in range(1 * self.dirmod, self.direction[0] + (1 * self.dirmod), self.dirmod):
+                coords_would_be = add_coords(self.coords, (x, 0))
+                next_coords_would_be = add_coords(self.coords, (x + (1 * self.dirmod), 0))
+                ret = ((x, 0), True)
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
                     if i.coords == next_coords_would_be:
                         return ret
         else:
-            for y in range(1 * self.dirmod, self.direction[1] + (1*self.dirmod), self.dirmod):
-                coords_would_be      = add_coords(self.coords, (0, y))
-                next_coords_would_be = add_coords(self.coords, (0, y+(1*self.dirmod)))
-                ret = ( (0, y), True)
+            for y in range(1 * self.dirmod, self.direction[1] + (1 * self.dirmod), self.dirmod):
+                coords_would_be = add_coords(self.coords, (0, y))
+                next_coords_would_be = add_coords(self.coords, (0, y + (1 * self.dirmod)))
+                ret = ((0, y), True)
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
