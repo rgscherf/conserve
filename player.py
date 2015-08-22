@@ -68,15 +68,16 @@ class Player(Sprite):
 class Dart(Sprite):
     def __init__(self, source, pos, direction):
         super(Dart, self).__init__(source=source, pos=pos)
-        self.direction = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
-        self.coords = pixel_to_coord(self.pos)
+        self.direction   = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
+        self.coords      = pixel_to_coord(self.pos)
         self.entity_type = "dart"
-        self.dirmod = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
+        self.dirmod      = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
+
 
     def update(self, index):
-        new_delta, did_hit = self.check_coords_in_range()
-        new_coords = add_coords(self.coords, new_delta)
-        new_pixels = coord_to_pixel(new_coords)
+        new_delta, did_hit = self.decide_how_far_to_travel()
+        new_coords         = add_coords(self.coords, new_delta)
+        new_pixels         = coord_to_pixel(new_coords)
 
         anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.05)
         anim.start(self)
@@ -90,25 +91,32 @@ class Dart(Sprite):
             return index
         return None
 
-    def check_coords_in_range(self):
+    def decide_how_far_to_travel(self):
+        """
+            Decide if the dart should stop during its current turn. Cases to stop for:
+            0. (Don't stop if I hit a player)
+            1. New tile is not clear()
+            2. There is a dart in the NEXT tile I would enter.
+            return ( (delta coords) , did_I_hit?)
+        """
         if self.direction[0] != 0:
-            for x in range(1 * self.dirmod, (self.direction[0] + 1) * self.dirmod):
-                tile = TILEMAP[add_coords(self.coords, (x, 0))]
-                if tile.pos == self.parent.pos:
-                    continue
-                for i in PLAYER_ENTITIES_INACTIVE:
-                    if i.coords == add_coords(self.coords, (x + self.dirmod, 0)):
-                        return ((x, 0), True)
-                if not tile.isclear():
-                    return ((x, 0), True)
+            for x in range(1 * self.dirmod, self.direction[0] + (1*self.dirmod), self.dirmod):
+                coords_would_be      = add_coords(self.coords, (x, 0))
+                next_coords_would_be = add_coords(self.coords, (x+(1*self.dirmod), 0))
+                ret = ( (x, 0), True)
+                if not TILEMAP[coords_would_be].isclear():
+                    return ret
+                for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
+                    if i.coords == next_coords_would_be:
+                        return ret
         else:
-            for y in range(1 * self.dirmod, (self.direction[1] + 1) * self.dirmod):
-                tile = TILEMAP[add_coords(self.coords, (0, y))]
-                if tile.pos == self.parent.pos:
-                    continue
-                for i in PLAYER_ENTITIES_INACTIVE:
-                    if i.coords == add_coords(self.coords, (0, y + self.dirmod)):
-                        return ((0, y), True)
-                if not tile.isclear():
-                    return ((0, y), True)
+            for y in range(1 * self.dirmod, self.direction[1] + (1*self.dirmod), self.dirmod):
+                coords_would_be      = add_coords(self.coords, (0, y))
+                next_coords_would_be = add_coords(self.coords, (0, y+(1*self.dirmod)))
+                ret = ( (0, y), True)
+                if not TILEMAP[coords_would_be].isclear():
+                    return ret
+                for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
+                    if i.coords == next_coords_would_be:
+                        return ret
         return (self.direction, False)
