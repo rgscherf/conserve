@@ -29,120 +29,120 @@ import random
 #########
 
 class Game(Widget):
-	def __init__(self):
-		super(Game, self).__init__()
-		self.tilesize            = TILE_SIZE
-		self.sidelength          = MAP_SIZE
-		self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
-		self.can_take_turn       = True
-		
-		self.keyboard = Window.request_keyboard(self.keyboard_close, self)
-		self.keyboard.bind(on_key_down=self.keydown)		
-		
-		self.generate_map()
-		self.spawn_feature(feature="forest", numfeatures=int(math.floor((self.sidelength**2) / 12)), spawn_chance=0.6)
-		self.spawn_feature(feature="water", numfeatures=int(math.floor((self.sidelength**2) / 40)), spawn_chance=0.4 )
+    def __init__(self):
+        super(Game, self).__init__()
+        self.tilesize            = TILE_SIZE
+        self.sidelength          = MAP_SIZE
+        self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
+        self.can_take_turn       = True
 
-		for i in TILEMAP:
-			self.add_widget(TILEMAP[i])
-		
-		self.spawn_player()
-		self.spawn_AIAnimal(Pig, 10)
-		self.spawn_AIAnimal(Wolf, 2)
+        self.keyboard = Window.request_keyboard(self.keyboard_close, self)
+        self.keyboard.bind(on_key_down=self.keydown)
 
-	def generate_map(self):
-		global TILEMAP
-		for y in range(self.sidelength):
-			for x in range(self.sidelength):
-				coords = (x*self.tilesize, y*self.tilesize)
-				TILEMAP[(x, y)] = Tile(coords)
+        self.generate_map()
+        self.spawn_feature(feature="forest", numfeatures=int(math.floor((self.sidelength**2) / 12)), spawn_chance=0.6)
+        self.spawn_feature(feature="water", numfeatures=int(math.floor((self.sidelength**2) / 40)), spawn_chance=0.4 )
 
-	def spawn_feature(self, feature, numfeatures, spawn_chance=0.6, blocking=True):
-		# takes a type of feature and a number of them to spawn
-		# mutates tilemap to add adjascent features to the initial number
-		# for each, stop adding adjacents when random.random() > spawn_chance
-		
-		def grow_feature(c):
-			# uses adjacency finder to get a new clear coord
-			# if no adjacency, returns original coord
-			# (in this case, will block until spawn_chance is tripped in parent)
+        for i in TILEMAP:
+            self.add_widget(TILEMAP[i])
 
-			try:
-				new_coords = find_any_adjacent_clear_tile(c, blocking)
-			except IndexError:
-				return c
-			TILEMAP[new_coords].add_foreground(feature, blocking)
-			return new_coords
+        self.spawn_player()
+        self.spawn_AIAnimal(Pig, 10)
+        self.spawn_AIAnimal(Wolf, 2)
 
-		for _ in range(numfeatures):
-			continue_spawning    = True if spawn_chance != 0 else False
+    def generate_map(self):
+        global TILEMAP
+        for y in range(self.sidelength):
+            for x in range(self.sidelength):
+                coords = (x*self.tilesize, y*self.tilesize)
+                TILEMAP[(x, y)] = Tile(coords)
 
-			coords = find_any_clear_tile(blocking)
-			TILEMAP[coords].add_foreground(feature, blocking) # spawn 1 feature...
+    def spawn_feature(self, feature, numfeatures, spawn_chance=0.6, blocking=True):
+        # takes a type of feature and a number of them to spawn
+        # mutates tilemap to add adjacent features to the initial number
+        # for each, stop adding adjaents when random.random() > spawn_chance
 
-			while continue_spawning == True:
-				if random.random() > spawn_chance: # ... and maybe more.
-					continue_spawning = False
-					break
-				else:
-					coords = grow_feature(coords)
-		
-	def spawn_player(self):
-		global GAMEINFO
-		c = find_any_clear_tile(self.sidelength)
-		TILEMAP[c].move_into()
-		self.player = Player(pos=coord_to_pixel(c))
-		self.add_widget(self.player)
-		GAMEINFO["playerid"] = self.player.entity_id
+        def grow_feature(c):
+            # uses adjacency finder to get a new clear coord
+            # if no adjacency, returns original coord
+            # (in this case, will block until spawn_chance is tripped in parent)
 
-	def spawn_AIAnimal(self, entityclass, num):
-		for i in range(num):
-			c = find_any_clear_tile(self.sidelength)
-			TILEMAP[c].move_into()
-			if c[0] < 998:
-				p = entityclass(pos=coord_to_pixel(c))
-			else:
-				raise NotImplementedError("tried to spawn {} but no free tiles".format(entity))
-			self.add_widget(p)
+            try:
+                new_coords = find_any_adjacent_clear_tile(c, blocking)
+            except IndexError:
+                return c
+            TILEMAP[new_coords].add_foreground(feature, blocking)
+            return new_coords
 
-	def keyboard_close(self):
-		pass
+        for _ in range(numfeatures):
+            continue_spawning    = True if spawn_chance != 0 else False
 
-	def keydown(self, keyboard, keycode, *rest):
-		if self.can_take_turn:
-			self.update(keycode[1])
-	
-	def update(self, keycode):
-		self.can_take_turn = False
-		self.move_player_entities()
-		self.player.update(keycode)
-		
+            coords = find_any_clear_tile(blocking)
+            TILEMAP[coords].add_foreground(feature, blocking) # spawn 1 feature...
 
-		for k, v in ENTITY_HASH.items():
-			if v.entity_type == "wolf":
-				v.update()
+            while continue_spawning == True:
+                if random.random() > spawn_chance: # ... and maybe more.
+                    continue_spawning = False
+                    break
+                else:
+                    coords = grow_feature(coords)
 
-		for k, v in ENTITY_HASH.items():
-			if v.entity_type == "pig":
-				v.update()
+    def spawn_player(self):
+        global GAMEINFO
+        c = find_any_clear_tile(self.sidelength)
+        TILEMAP[c].move_into()
+        self.player = Player(pos=coord_to_pixel(c))
+        self.add_widget(self.player)
+        GAMEINFO["playerid"] = self.player.entity_id
 
-		self.key = None
-		self.can_take_turn = True
+    def spawn_AIAnimal(self, entityclass, num):
+        for i in range(num):
+            c = find_any_clear_tile(self.sidelength)
+            TILEMAP[c].move_into()
+            if c[0] < 998:
+                p = entityclass(pos=coord_to_pixel(c))
+            else:
+                raise NotImplementedError("tried to spawn {} but no free tiles".format(entity))
+            self.add_widget(p)
 
-	def move_player_entities(self):
-		global PLAYER_ENTITIES
-		global PLAYER_ENTITIES_INACTIVE
-		remove_arrows = []
-		for i, e in enumerate(PLAYER_ENTITIES):
-			remove_index = e.update(i)
-			remove_arrows.append(remove_index)
+    def keyboard_close(self):
+        pass
 
-		remove_arrows.sort()
-		remove_arrows.reverse()
-		for i in remove_arrows:
-			if i:
-				PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
-				del PLAYER_ENTITIES[i]
+    def keydown(self, keyboard, keycode, *rest):
+        if self.can_take_turn:
+            self.update(keycode[1])
+
+    def update(self, keycode):
+        self.can_take_turn = False
+        self.move_player_entities()
+        self.player.update(keycode)
+
+
+        for k, v in ENTITY_HASH.items():
+            if v.entity_type == "wolf":
+                v.update()
+
+        for k, v in ENTITY_HASH.items():
+            if v.entity_type == "pig":
+                v.update()
+
+        self.key = None
+        self.can_take_turn = True
+
+    def move_player_entities(self):
+        global PLAYER_ENTITIES
+        global PLAYER_ENTITIES_INACTIVE
+        remove_arrows = []
+        for i, e in enumerate(PLAYER_ENTITIES):
+            remove_index = e.update(i)
+            remove_arrows.append(remove_index)
+
+        remove_arrows.sort()
+        remove_arrows.reverse()
+        for i in remove_arrows:
+            if i:
+                PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
+                del PLAYER_ENTITIES[i]
 
 #############
 # MENU WIDGET
@@ -168,9 +168,9 @@ class Game(Widget):
 
 class GameApp(App):
     def build(self):
-    	game = Game()
-    	Window.size = game.size
-    	return game
+        game = Game()
+        Window.size = game.size
+        return game
 
 
 if __name__ == '__main__':
