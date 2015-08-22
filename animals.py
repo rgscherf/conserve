@@ -194,7 +194,7 @@ class Wolf(AIAnimal):
 			If I move on top of my target, stop and also skip my next move.
 		"""
 		target     = self.find_nearest("pig")
-		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False) if target else find_any_adjacent_clear_tile()
+		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False) if target else find_any_adjacent_clear_tile(self.coords)
 		return new_coords
 
 

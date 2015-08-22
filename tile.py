@@ -49,9 +49,6 @@ class Tile(Widget):
 			self.foreground_type = foreground
 			self.add_widget(self.foreground)
 		else:
-			# self.hasgrass = True
-			# self.grass    = Sprite(source=self.tiledict[foreground], pos=self.pos)
-			# self.add_widget(self.grass)
 			pass
 
 	def clear_foreground(self):

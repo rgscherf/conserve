@@ -115,8 +115,8 @@ class Game(Widget):
 	
 	def update(self, keycode):
 		self.can_take_turn = False
-		self.player.update(keycode)
 		self.move_player_entities()
+		self.player.update(keycode)
 		
 
 		for k, v in ENTITY_HASH.items():

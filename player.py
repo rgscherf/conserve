@@ -57,6 +57,10 @@ class Player(Sprite):
 		dart = Dart(shots[d][0], coord_to_pixel(self.coords), shots[d][1])
 		self.add_widget(dart)
 		PLAYER_ENTITIES.append(dart)
+		index = len(PLAYER_ENTITIES) - 1
+		delete = PLAYER_ENTITIES[index].update(index)
+		if delete:
+			del PLAYER_ENTITIES[index]
 
 
 class Dart(Sprite):
@@ -76,10 +80,9 @@ class Dart(Sprite):
 		anim.start(self)
 
 		self.coords = new_coords
-		if self.coords != self.parent.coords:
-			collided = check_for_collision(self)
-			if collided:
-				collided.die()
+		collided = check_for_collision(self)
+		if collided:
+			collided.die()
 
 		if did_hit:
 			return index
@@ -88,6 +91,9 @@ class Dart(Sprite):
 	def check_coords_in_range(self):
 		if self.direction[0] != 0:
 			for x in range(1*self.dirmod, (self.direction[0] + 1)*self.dirmod):
+				# for i in PLAYER_ENTITIES:
+				# 	if i.coords == add_coords(self.coords, (self.dirmod, 0)):
+				# 		return ( (x, 0) , True)
 				tile = TILEMAP[add_coords(self.coords, (x, 0))]
 				if tile.pos == self.parent.pos:
 					continue
@@ -95,6 +101,9 @@ class Dart(Sprite):
 					return ( (x, 0) , True)
 		else:
 			for y in range(1*self.dirmod, (self.direction[1] + 1)*self.dirmod):
+				# for i in PLAYER_ENTITIES:
+				# 	if i.coords == add_coords(self.coords, (0, self.dirmod)):
+				# 		return ( (0, y) , True)
 				tile = TILEMAP[add_coords(self.coords, (0, y))]
 				if tile.pos == self.parent.pos:
 					continue
