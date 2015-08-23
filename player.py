@@ -44,7 +44,7 @@ class Player(Sprite):
             new_coords = add_coords(self.coords, moves[d])
         except KeyError:
             return self.coords
-        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear():
+        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear(mask="player"):
             return new_coords
         return self.coords
 
@@ -116,7 +116,6 @@ class Dart(Sprite):
         else:
             for y in range(1 * self.dirmod, self.direction[1] + (1 * self.dirmod), self.dirmod):
                 coords_would_be = add_coords(self.coords, (0, y))
-
                 next_coords_would_be = add_coords(coords_would_be, (0,1*self.dirmod))
 
                 if not is_coord_inside_map(next_coords_would_be):

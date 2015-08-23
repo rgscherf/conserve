@@ -36,16 +36,25 @@ class Tile(Widget):
     def move_outof(self):
         self._entity = None
 
-    def isclear(self, ignore_entities=False):
+    def isclear(self, mask=None):
         has_foreground = True if self._foreground else False
         has_entity = True if self._entity else False
-        if ignore_entities:
-            has_player = True if self._entity.entity_type == "player" else False
-            has_dart = True if self._entity.entity_type == "dart" else False
+        if mask=="predator":
+            # predators will not move into a tile that has a player or dart.
+            # in addition to terrain features
+            if has_entity:
+                has_player = self._entity.entity_type == "player"
+                has_dart = self._entity.entity_type == "dart"
+            else:
+                has_player = False
+                has_dart = False
             return (not has_foreground) and not (has_player or has_dart)
+        elif mask=="player":
+            # players can move over any animal, and darts
+            # but can't move through terrain
+            return not has_foreground
         else:
             return not (has_foreground or has_entity)
-
 
     def add_foreground(self, foreground, blocking=True):
         if blocking:

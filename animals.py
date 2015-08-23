@@ -49,12 +49,12 @@ class AIAnimal(Sprite):
 			if i[0] > maxdist:
 				raise NotImplementedError("find_nearest() couldn't find matching entities")
 
-	def select_movement(self, ent, direction="toward", ignore_entities=False, can_rest=True):
+	def select_movement(self, ent, direction="toward", movement_mask=None, can_rest=True):
 		"""
 			Select direction in which to move, based on the target's position relative to target.
 			ent: target entity (remember, you can pass a Tile if you want to target a coordinate)
 			direction: "toward"/"away"; if "away", chosen direction will be flipped before returning.
-			ignore_entities: if True, tile collision check will ignore the presence of entities (this is to enable predators)
+			movement_mask: if True, tile collision check will ignore the presence of entities (this is to enable predators)
 			can_rest: if True, the entity can choose not to move (this messes with predator AI)
 		"""
 		choices = []
@@ -83,7 +83,7 @@ class AIAnimal(Sprite):
 			if direction == "away":
 				c = (c[0] * -1, c[1] * -1)
 			candidate = add_coords(self.coords, c)
-			if TILEMAP[candidate].isclear(ignore_entities):
+			if TILEMAP[candidate].isclear(movement_mask):
 				choices_ret.append(candidate)
 		try:
 			return random.choice(choices_ret)
@@ -133,7 +133,7 @@ class Pig(AIAnimal):
 		"""
 		nearest_snake = self.find_nearest("snake")
 		if nearest_snake and distance_between_centers(self, nearest_snake) <= (self.sightrange * TILE_SIZE):
-			return self.select_movement(nearest_snake, "away")
+			return self.select_movement(nearest_snake, direction="away")
 		else:
 			if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
 				self.reached_target = True
@@ -194,7 +194,7 @@ class Snake(AIAnimal):
 			If I move on top of my target, stop and also skip my next move.
 		"""
 		target     = self.find_nearest("pig")
-		new_coords = self.select_movement(target, ignore_entities=True, can_rest=False) if target else find_any_adjacent_clear_tile(self.coords)
+		new_coords = self.select_movement(target, movement_mask="predator", can_rest=False) if target else find_any_adjacent_clear_tile(self.coords)
 		return new_coords
 
 
