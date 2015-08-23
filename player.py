@@ -49,6 +49,7 @@ class Player(Sprite):
         return self.coords
 
     def shoot_dart(self, d):
+        global PLAYER_ENTITIES
         global PLAYER_ENTITIES_INACTIVE
         shots = {
             "i": ["images/arrow_up.png", (0, 1)],
@@ -59,13 +60,14 @@ class Player(Sprite):
 
         dart = Dart(shots[d][0], coord_to_pixel(self.coords), shots[d][1])
         self.add_widget(dart)
-        PLAYER_ENTITIES.append(dart)
-        index = len(PLAYER_ENTITIES) - 1
-        delete = PLAYER_ENTITIES[index].update(index)
+        # PLAYER_ENTITIES.append(dart)
+        delete = dart.update(0)
+        print "shot arrow, index is {}".format(delete)
         if delete:
             TILEMAP[dart.coords].stop_dart()
-            PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[index])
-            del PLAYER_ENTITIES[index]
+            PLAYER_ENTITIES_INACTIVE.append(dart)
+        else:
+            PLAYER_ENTITIES.append(dart)
 
 
 class Dart(Sprite):
@@ -112,10 +114,14 @@ class Dart(Sprite):
                 coords_would_be = add_coords(self.coords, (x, 0))
                 next_coords_would_be = add_coords(self.coords, (x + (1 * self.dirmod), 0))
                 ret = ((x, 0), True)
+                collided = check_for_collision(self)
+                if collided:
+                    collided.die()
+                
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
-                    if i.coords == next_coords_would_be:
+                    if next_coords_would_be == i.coords:
                         return ret
         else:
             for y in range(1 * self.dirmod, self.direction[1] + (1 * self.dirmod), self.dirmod):
@@ -125,6 +131,6 @@ class Dart(Sprite):
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
-                    if i.coords == next_coords_would_be:
+                    if next_coords_would_be == i.coords:
                         return ret
         return (self.direction, False)
