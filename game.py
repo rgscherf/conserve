@@ -114,7 +114,7 @@ class Game(Widget):
 
     def update(self, keycode):
         self.can_take_turn = False
-        self.move_player_entities()
+        self.move_darts()
         self.player.update(keycode)
 
 
@@ -129,19 +129,24 @@ class Game(Widget):
         self.key = None
         self.can_take_turn = True
 
-    def move_player_entities(self):
-        global PLAYER_ENTITIES
-        global PLAYER_ENTITIES_INACTIVE
-        remove_arrows = []
-        for i, e in enumerate(PLAYER_ENTITIES):
-            remove_arrows.append( e.update(i) )
-        remove_arrows.sort()
-        remove_arrows.reverse()
-        for i in remove_arrows:
-            if i:
-                print "removing {}".format(i)
-                PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
-                del PLAYER_ENTITIES[i]
+    # def move_player_entities(self):
+    #     global PLAYER_ENTITIES
+    #     global PLAYER_ENTITIES_INACTIVE
+    #     remove_arrows = []
+    #     for i, e in enumerate(PLAYER_ENTITIES):
+    #         remove_arrows.append( e.update(i) )
+    #     remove_arrows.sort()
+    #     remove_arrows.reverse()
+    #     for i in remove_arrows:
+    #         if i:
+    #             print "removing {}".format(i)
+    #             PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
+    #             del PLAYER_ENTITIES[i]
+
+    def move_darts(self):
+        for e in PLAYER_ENTITIES:
+            if e.isactive:
+                e.update()
 
 #############
 # MENU WIDGET

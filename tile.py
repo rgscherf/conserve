@@ -40,6 +40,9 @@ class Tile(Widget):
 
     def isclear(self, ignore_entities=False):
         if ignore_entities:
+            if self._hasforeground:
+                player = self.foreground_type == "player"
+                dart = self.foreground_type ==
             return not self._hasforeground
         else:
             return not (self._hasforeground or self._hasentity)
@@ -64,3 +67,4 @@ class Tile(Widget):
     def stop_dart(self):
         if self.foreground_type == "forest":
             self.clear_foreground()
+        self.move_into()
