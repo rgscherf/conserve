@@ -50,6 +50,8 @@ class Game(Widget):
         self.spawn_AIAnimal(Pig, 10)
         self.spawn_AIAnimal(Snake, 2)
 
+        self.add_widget(self.player)
+
     def generate_map(self):
         global TILEMAP
         for y in range(self.sidelength):
@@ -93,7 +95,6 @@ class Game(Widget):
 
         self.player = Player(pos=coord_to_pixel(c))
         TILEMAP[c].move_into(self.player)
-        self.add_widget(self.player)
         GAMEINFO["playerid"] = self.player.entity_id
 
     def spawn_AIAnimal(self, entityclass, num):
@@ -117,7 +118,6 @@ class Game(Widget):
         self.move_darts()
         self.player.update(keycode)
 
-
         for k, v in ENTITY_HASH.items():
             if v.entity_type == "snake":
                 v.update()
@@ -128,20 +128,6 @@ class Game(Widget):
 
         self.key = None
         self.can_take_turn = True
-
-    # def move_player_entities(self):
-    #     global PLAYER_ENTITIES
-    #     global PLAYER_ENTITIES_INACTIVE
-    #     remove_arrows = []
-    #     for i, e in enumerate(PLAYER_ENTITIES):
-    #         remove_arrows.append( e.update(i) )
-    #     remove_arrows.sort()
-    #     remove_arrows.reverse()
-    #     for i in remove_arrows:
-    #         if i:
-    #             print "removing {}".format(i)
-    #             PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
-    #             del PLAYER_ENTITIES[i]
 
     def move_darts(self):
         for e in PLAYER_ENTITIES:

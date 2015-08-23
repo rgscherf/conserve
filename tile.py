@@ -49,6 +49,13 @@ class Tile(Widget):
                 has_player = False
                 has_dart = False
             return (not has_foreground) and not (has_player or has_dart)
+        elif mask=="flying":
+            if has_entity:
+                has_player = self._entity.entity_type == "player"
+            else:
+                has_player = False
+
+            return not has_foreground and not has_player
         elif mask=="player":
             # players can move over any animal, and darts
             # but can't move through terrain
