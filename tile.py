@@ -38,11 +38,9 @@ class Tile(Widget):
     def move_outof(self):
         self._hasentity = False
 
-    def isclear(self, ignore_entities=False, player=False):
+    def isclear(self, ignore_entities=False):
         if ignore_entities:
             return not self._hasforeground
-        elif player:
-            return True if self.foreground_type == "grass" else not (self._hasforeground or self._hasentity)
         else:
             return not (self._hasforeground or self._hasentity)
 

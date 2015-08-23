@@ -11,7 +11,7 @@ import random
 
 class AIAnimal(Sprite):
 	animal_sprites = { "pig": "images/pig.png"
-					 , "wolf": "images/snake.png"
+					 , "snake": "images/snake.png"
 					 }
 
 	def __init__(self, source, pos):
@@ -127,13 +127,13 @@ class Pig(AIAnimal):
 
 	def decide_direction(self):
 		"""
-			If I see a wolf, run away.
+			If I see a snake, run away.
 			Else, find the nearest water and move toward it.
 			Once I get there, start moving randomly.
 		"""
-		nearest_wolf = self.find_nearest("wolf")
-		if nearest_wolf and distance_between_centers(self, nearest_wolf) <= (self.sightrange * TILE_SIZE):
-			return self.select_movement(nearest_wolf, "away")
+		nearest_snake = self.find_nearest("snake")
+		if nearest_snake and distance_between_centers(self, nearest_snake) <= (self.sightrange * TILE_SIZE):
+			return self.select_movement(nearest_snake, "away")
 		else:
 			if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
 				self.reached_target = True
@@ -145,10 +145,10 @@ class Pig(AIAnimal):
 			return self.select_movement(target)				
 
 
-class Wolf(AIAnimal):
+class Snake(AIAnimal):
 	def __init__(self, pos):
-		super(Wolf, self).__init__(source=self.animal_sprites["wolf"], pos=pos)
-		self.entity_type          = "wolf"
+		super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
+		self.entity_type          = "snake"
 		self.sightrange           = 999
 		self.num_moves            = 2
 		self.resting              = False

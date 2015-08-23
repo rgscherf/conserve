@@ -44,7 +44,7 @@ class Player(Sprite):
             new_coords = add_coords(self.coords, moves[d])
         except KeyError:
             return self.coords
-        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear(player=True):
+        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear():
             return new_coords
         return self.coords
 
@@ -92,9 +92,9 @@ class Dart(Sprite):
         anim.start(self)
 
         self.coords = new_coords
-        collided = check_for_collision(self)
-        if collided:
-            collided.die()
+        # collided = check_for_collision(self)
+        # if collided:
+        #     collided.die()
 
         if did_hit:
             TILEMAP[self.coords].stop_dart()
@@ -112,16 +112,15 @@ class Dart(Sprite):
         if self.direction[0] != 0:
             for x in range(1 * self.dirmod, self.direction[0] + (1 * self.dirmod), self.dirmod):
                 coords_would_be = add_coords(self.coords, (x, 0))
-                next_coords_would_be = add_coords(self.coords, (x + (1 * self.dirmod), 0))
+                next_doords_would_be = add_coords(self.coords, (x + (1 * self.dirmod), 0))
                 ret = ((x, 0), True)
-                collided = check_for_collision(self)
-                if collided:
-                    collided.die()
-                
                 if not TILEMAP[coords_would_be].isclear():
+                    collided = check_for_collision(self, coords_would_be)
+                    if collided:
+                        collided.die()
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
-                    if next_coords_would_be == i.coords:
+                    if next_doords_would_be == i.coords:
                         return ret
         else:
             for y in range(1 * self.dirmod, self.direction[1] + (1 * self.dirmod), self.dirmod):
@@ -129,6 +128,9 @@ class Dart(Sprite):
                 next_coords_would_be = add_coords(self.coords, (0, y + (1 * self.dirmod)))
                 ret = ((0, y), True)
                 if not TILEMAP[coords_would_be].isclear():
+                    collided = check_for_collision(self, coords_would_be)
+                    if collided:
+                        collided.die()
                     return ret
                 for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
                     if next_coords_would_be == i.coords:

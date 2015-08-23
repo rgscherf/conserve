@@ -10,7 +10,7 @@ from kivy.uix.widget import Widget
 from globalvars import *
 from tileutils import *
 
-from animals import Wolf, Pig
+from animals import Snake, Pig
 from player import Player
 from tile import Tile
 
@@ -22,7 +22,7 @@ import random
 #########
 
 # window layout (menu bar above/below viewport?)
-# need to implement wolf resting time
+# need to implement snake resting time
 
 #########
 # GAME 
@@ -48,7 +48,7 @@ class Game(Widget):
 
         self.spawn_player()
         self.spawn_AIAnimal(Pig, 10)
-        self.spawn_AIAnimal(Wolf, 2)
+        self.spawn_AIAnimal(Snake, 2)
 
     def generate_map(self):
         global TILEMAP
@@ -119,7 +119,7 @@ class Game(Widget):
 
 
         for k, v in ENTITY_HASH.items():
-            if v.entity_type == "wolf":
+            if v.entity_type == "snake":
                 v.update()
 
         for k, v in ENTITY_HASH.items():
