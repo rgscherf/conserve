@@ -24,7 +24,7 @@ class AIAnimal(Sprite):
 		self.entity_id               = ENTITY_ID
 		ENTITY_ID                    += 1
 		ENTITY_HASH[self.entity_id]  = self
-		TILEMAP[self.coords].move_into()
+		TILEMAP[self.coords].move_into(self)
 
 	def update(self):
 		raise NotImplementedError("no update() defined for {}").format(self.entity_type)
@@ -123,7 +123,7 @@ class Pig(AIAnimal):
 		
 		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
 		anim.start(self)
-		TILEMAP[self.coords].move_into()
+		TILEMAP[self.coords].move_into(self)
 
 	def decide_direction(self):
 		"""
@@ -166,7 +166,7 @@ class Snake(AIAnimal):
 			if not self.resting:
 				TILEMAP[self.coords].move_outof()
 				self.coords = self.decide_direction()
-				TILEMAP[self.coords].move_into()
+				TILEMAP[self.coords].move_into(self)
 				movelog[i] = self.coords
 				
 				collided = check_for_collision(self)

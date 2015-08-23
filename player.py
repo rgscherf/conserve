@@ -18,7 +18,7 @@ class Player(Sprite):
         self.entity_id = ENTITY_ID
         ENTITY_ID += 1
         ENTITY_HASH[self.entity_id] = self
-        TILEMAP[self.coords].move_into()
+        TILEMAP[self.coords].move_into(self)
 
     def update(self, key):
         global TILEMAP
@@ -28,7 +28,7 @@ class Player(Sprite):
             TILEMAP[self.coords].move_outof()
             new_coords = self.validate_move(key)
             self.coords = new_coords
-            TILEMAP[self.coords].move_into()
+            TILEMAP[self.coords].move_into(self)
             new_pixels = coord_to_pixel(new_coords)
             anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.05)
             anim.start(self)
@@ -72,13 +72,16 @@ class Dart(Sprite):
 
     def __init__(self, source, pos, direction):
         super(Dart, self).__init__(source=source, pos=pos)
+        global TILEMAP
         self.direction = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
         self.coords = pixel_to_coord(self.pos)
         self.entity_type = "dart"
         self.isactive = True
         self.dirmod = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
+        TILEMAP[self.coords].move_into(self)
 
     def update(self):
+        TILEMAP[self.coords].move_outof()
         new_coords = self.decide_how_far_to_travel()
         new_pixels = coord_to_pixel(new_coords)
 
@@ -89,6 +92,7 @@ class Dart(Sprite):
         collided = check_for_collision(self)
         if collided:
             collided.die()
+        TILEMAP[self.coords].move_into(self)
 
     def decide_how_far_to_travel(self):
         """
