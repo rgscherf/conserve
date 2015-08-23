@@ -134,13 +134,12 @@ class Game(Widget):
         global PLAYER_ENTITIES_INACTIVE
         remove_arrows = []
         for i, e in enumerate(PLAYER_ENTITIES):
-            remove_index = e.update(i)
-            remove_arrows.append(remove_index)
-
+            remove_arrows.append( e.update(i) )
         remove_arrows.sort()
         remove_arrows.reverse()
         for i in remove_arrows:
             if i:
+                print "removing {}".format(i)
                 PLAYER_ENTITIES_INACTIVE.append(PLAYER_ENTITIES[i])
                 del PLAYER_ENTITIES[i]
 

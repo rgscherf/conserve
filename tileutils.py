@@ -86,7 +86,9 @@ def find_entities_in_radius(me, coord_radius):
 def add_coords(a, b):
     added_x = a[0] + b[0]
     added_y = a[1] + b[1]
-    return (added_x, added_y) if is_coord_inside_map(added_x, added_y) else (a, b)
+    checked_x = added_x if 0 <= added_x < MAP_SIZE else max(0, min(a[0] + b[0], (MAP_SIZE-1)))
+    checked_y = added_y if 0 <= added_y < MAP_SIZE else max(0, min(a[1] + b[1], (MAP_SIZE-1)))
+    return (checked_x, checked_y)
 
 
 def add_pixels(a, b):
@@ -98,8 +100,8 @@ def add_pixels(a, b):
 
 
 def is_coord_inside_map(c):
-    x_inside = c[0] >= 0 and c[0] < MAP_SIZE
-    y_inside = c[1] >= 0 and c[1] < MAP_SIZE
+    x_inside = 0 <= c[0] < MAP_SIZE
+    y_inside = 0 <= c[1] < MAP_SIZE
     return x_inside and y_inside
 
 

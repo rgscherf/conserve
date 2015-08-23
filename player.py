@@ -60,9 +60,7 @@ class Player(Sprite):
 
         dart = Dart(shots[d][0], coord_to_pixel(self.coords), shots[d][1])
         self.add_widget(dart)
-        # PLAYER_ENTITIES.append(dart)
-        delete = dart.update(0)
-        print "shot arrow, index is {}".format(delete)
+        delete = dart.update(99999)
         if delete:
             TILEMAP[dart.coords].stop_dart()
             PLAYER_ENTITIES_INACTIVE.append(dart)
@@ -94,6 +92,7 @@ class Dart(Sprite):
         collided = check_for_collision(self)
         if collided:
             collided.die()
+
         if did_hit:
             TILEMAP[self.coords].stop_dart()
             return index
@@ -112,9 +111,11 @@ class Dart(Sprite):
                 next_coords_would_be = add_coords(coords_would_be, (1*self.dirmod, 0))
                 ret = (coords_would_be, True)
 
+                if not is_coord_inside_map(next_coords_would_be):
+                    return ret
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
-                for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
+                for i in (PLAYER_ENTITIES_INACTIVE):
                     if next_coords_would_be == i.coords:
                         return ret
         else:
@@ -124,10 +125,12 @@ class Dart(Sprite):
                 next_coords_would_be = add_coords(coords_would_be, (0,1*self.dirmod))
                 ret = (coords_would_be, True)
 
+                if not is_coord_inside_map(next_coords_would_be):
+                    return ret
                 if not TILEMAP[coords_would_be].isclear():
                     return ret
-                for i in (PLAYER_ENTITIES + PLAYER_ENTITIES_INACTIVE):
+                for i in (PLAYER_ENTITIES_INACTIVE):
                     if next_coords_would_be == i.coords:
                         return ret
-        ret = add_coords(self.direction, self.coords)
+        ret = add_coords(self.coords, self.direction)
         return (ret, False)
