@@ -65,4 +65,4 @@ class Tile(Widget):
 
     def stop_dart(self):
         if self.foreground_type == "forest":
-            self.add_foreground("grass")
+            self.clear_foreground()

@@ -102,7 +102,7 @@ class Game(Widget):
             if c[0] < 998:
                 p = entityclass(pos=coord_to_pixel(c))
             else:
-                raise NotImplementedError("tried to spawn {} but no free tiles".format(entity))
+                raise NotImplementedError("tried to spawn {} but no free tiles".format(entityclass))
             self.add_widget(p)
 
     def keyboard_close(self):
