@@ -91,7 +91,7 @@ def find_next_path_step(me, target, collisionmask):
     paths = AStarGrid(graph)
     start, end = nodes[me.coords], nodes[target.coords]
     path = paths.search(start, end)
-    if path:
-        return (path[0].x, path[0].y)
+    if path and len(path) > 1:
+        return ((path[1].x, path[1].y), path)
     else:
-        return find_any_adjacent_clear_tile(me.coords)
+        return (find_any_adjacent_clear_tile(me.coords), None)

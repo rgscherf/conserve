@@ -20,12 +20,13 @@ class AIAnimal(Sprite):
 		global ENTITY_ID
 		global ENTITY_HASH
 		global TILEMAP
-		self.lastcoords              = (999,999)
-		self.coords                  = pixel_to_coord(pos)
-		self.entity_id               = ENTITY_ID
-		ENTITY_ID                    += 1
-		ENTITY_HASH[self.entity_id]  = self
+		self.lastcoords = (999,999)
+		self.coords = pixel_to_coord(pos)
+		self.entity_id = ENTITY_ID
+		ENTITY_ID += 1
+		ENTITY_HASH[self.entity_id] = self
 		TILEMAP[self.coords].move_into(self)
+		self.isalive = True
 
 	def update(self):
 		raise NotImplementedError("no update() defined for {}").format(self.entity_type)
@@ -50,47 +51,13 @@ class AIAnimal(Sprite):
 			if i[0] > maxdist:
 				raise NotImplementedError("find_nearest() couldn't find matching entities")
 
-	def select_movement(self, ent, direction="toward", movement_mask=None, can_rest=True):
-		# """
-		# 	Select direction in which to move, based on the target's position relative to target.
-		# 	ent: target entity (remember, you can pass a Tile if you want to target a coordinate)
-		# 	direction: "toward"/"away"; if "away", chosen direction will be flipped before returning.
-		# 	movement_mask: if True, tile collision check will ignore the presence of entities (this is to enable predators)
-		# 	can_rest: if True, the entity can choose not to move (this messes with predator AI)
-		# """
-		# choices = []
-		# up      = (0,1)
-		# down    = (0,-1)
-		# left    = (-1,0)
-		# right   = (1,0)
-		# nothing = (0,0)
-		
-		# if can_rest:
-		# 	if self.center_y == ent.center_y or self.center_x == ent.center_x:
-		# 		choices.append(nothing)
-		
-		# if self.center_y > ent.center_y:
-		# 	choices.append(down)  
-		# else:
-		# 	choices.append(up)
-		
-		# if self.center_x > ent.center_x:
-		# 	choices.append(left) 
-		# else:
-		# 	choices.append(right)
-
-		# choices_ret = []
-		# for c in choices:
-		# 	if direction == "away":
-		# 		c = (c[0] * -1, c[1] * -1)
-		# 	candidate = add_coords(self.coords, c)
-		# 	if TILEMAP[candidate].isclear(movement_mask):
-		# 		choices_ret.append(candidate)
-		# try:
-		# 	return random.choice(choices_ret)
-		# except IndexError:
-		# 	return self.coords
-		return find_next_path_step(self, ent, movement_mask)
+	def get_astar(self, ent, direction="toward", movement_mask=None, can_rest=True):
+		new_coords, path = find_next_path_step(self, ent, movement_mask)
+		if path:
+			print "{}:{} moving to {} -- path length is {}".format(self.entity_type, self.entity_id, new_coords, len(path))
+		else:
+			print "{}:{} moving to {} -- HAS NO PATH".format(self.entity_type, self.entity_id, new_coords)
+		return new_coords
 
 	def die(self):
 		global ENTITY_HASH
@@ -99,6 +66,7 @@ class AIAnimal(Sprite):
 		TILEMAP[self.coords].move_outof()
 		del ENTITY_HASH[self.entity_id]
 		self.color = (1,1,1,0.5)
+		self.isalive = False
 
 
 class Pig(AIAnimal):
@@ -127,22 +95,22 @@ class Pig(AIAnimal):
 		"""
 		global TILEMAP
 		TILEMAP[self.coords].move_outof()
-		new_coords  = self.decide_direction()
+		new_coords  = self.select_move()
 		new_pixels  = coord_to_pixel(new_coords)
 		self.coords = new_coords
 		
-		if self.coords == self.lastcoords:
-			new_coords  = find_any_adjacent_clear_tile(self.coords)
-			self.coords = new_coords
-			new_pixels  = coord_to_pixel(self.coords)
+		# if self.coords == self.lastcoords:
+		# 	new_coords  = find_any_adjacent_clear_tile(self.coords)
+		# 	self.coords = new_coords
+		# 	new_pixels  = coord_to_pixel(self.coords)
 			
-		self.lastcoords = self.coords
+		# self.lastcoords = self.coords
 		
 		anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.4, t="in_out_elastic")
 		anim.start(self)
 		TILEMAP[self.coords].move_into(self)
 
-	def decide_direction(self):
+	def select_move(self):
 		"""
 			If I see a snake, run away.
 			Else, find the nearest water and move toward it.
@@ -150,7 +118,7 @@ class Pig(AIAnimal):
 		"""
 		# nearest_snake = self.find_nearest("snake")
 		# if nearest_snake and distance_between_centers(self, nearest_snake) <= (self.sightrange * TILE_SIZE):
-		# 	return self.select_movement(nearest_snake, direction="away")
+		# 	return self.get_astar(nearest_snake, direction="away")
 		# else:
 		if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
 			self.reached_target = True
@@ -159,42 +127,34 @@ class Pig(AIAnimal):
 			target = self.terrain_target
 		else:
 			target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
-		return self.select_movement(target)				
+		return self.get_astar(target)				
 
 
 class Snake(AIAnimal):
 	def __init__(self, pos):
 		super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
-		self.entity_type          = "snake"
-		self.sightrange           = 999
-		self.num_moves            = 2
-		self.resting              = False
-		self.collided_with_key    = None
+		self.entity_type = "snake"
+		self.sightrange = 999
+		self.num_moves = 2
+		self.resting = False
+		self.collided_with_key = None
 		self.collided_with_entity = None
-		self.lastcoords           = None
+		self.target = None
 
 	def update(self):
 		global TILEMAP
 
-		self.lastcoords = self.coords
-
 		movelog = {}
 		for i in range(self.num_moves):
-			if not self.resting:
-				TILEMAP[self.coords].move_outof()
-				self.coords = self.decide_direction()
-				TILEMAP[self.coords].move_into(self)
-				movelog[i] = self.coords
-				
-				collided = check_for_collision(self)
-				if collided:
-					self.resting = True
-					collided.die()
-
-		if self.coords == self.lastcoords and not self.resting:
-			self.coords = find_any_adjacent_clear_tile(self.coords)
-		
-		self.resting = False
+			TILEMAP[self.coords].move_outof()
+			self.coords = self.select_move()
+			TILEMAP[self.coords].move_into(self)
+			movelog[i] = self.coords
+			
+			collided = check_for_collision(self)
+			if collided:
+				collided.die()
+				self.target = None
 		
 		first_move_px  = coord_to_pixel(movelog[0])
 		try:
@@ -203,14 +163,19 @@ class Snake(AIAnimal):
 			second_move_px = first_move_px
 
 		anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
-		anim.start(self)	
+		anim.start(self)
 
-	def decide_direction(self):
+	def select_move(self):
 		"""
 			Move toward the nearest pig. (I move 2 tiles per turn)
 			If I move on top of my target, stop and also skip my next move.
 		"""
-		target = self.find_nearest("pig")
-		new_coords = self.select_movement(target, movement_mask="predator") if target else find_any_adjacent_clear_tile(self.coords)
+		if not self.target or not self.target.isalive:
+			try:
+				self.target = self.find_nearest("pig")
+			except:
+				# this code path is borked. Need to target an entity, not coords.
+				self.target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
+		new_coords = self.get_astar(self.target, movement_mask="predator")
 		return new_coords
 
