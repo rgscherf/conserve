@@ -36,7 +36,7 @@ Muskrats cannot cross player-made fences.
 
 #### Snake
 
-Snakes eat muskrats. The snake stretchest its body from its starting position (a cave) toward the muskrat. If it reaches the muskrat, the snake swallows it and the muskrat is passed through the snake's body at a certain speed (ie X tiles per turn). If it reaches the end of the snake's body, a new snake is born. New snakes nest in an empty cave, then begin to hunt.
+Snakes eat muskrats. The snake stretches its body from its starting position (a cave) toward the muskrat. If it reaches the muskrat, the snake swallows it and the muskrat is passed through the snake's body at a certain speed (ie X tiles per turn). If it reaches the end of the snake's body, a new snake is born. New snakes nest in an empty cave, then begin to hunt.
 
 Snakes cannot cross player-made fences. 
 

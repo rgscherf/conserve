@@ -3,6 +3,7 @@
 from kivy.animation import Animation
 
 from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP
+from astar import find_next_path_step
 from tileutils import *
 from tile import Sprite
 
@@ -50,45 +51,46 @@ class AIAnimal(Sprite):
 				raise NotImplementedError("find_nearest() couldn't find matching entities")
 
 	def select_movement(self, ent, direction="toward", movement_mask=None, can_rest=True):
-		"""
-			Select direction in which to move, based on the target's position relative to target.
-			ent: target entity (remember, you can pass a Tile if you want to target a coordinate)
-			direction: "toward"/"away"; if "away", chosen direction will be flipped before returning.
-			movement_mask: if True, tile collision check will ignore the presence of entities (this is to enable predators)
-			can_rest: if True, the entity can choose not to move (this messes with predator AI)
-		"""
-		choices = []
-		up      = (0,1)
-		down    = (0,-1)
-		left    = (-1,0)
-		right   = (1,0)
-		nothing = (0,0)
+		# """
+		# 	Select direction in which to move, based on the target's position relative to target.
+		# 	ent: target entity (remember, you can pass a Tile if you want to target a coordinate)
+		# 	direction: "toward"/"away"; if "away", chosen direction will be flipped before returning.
+		# 	movement_mask: if True, tile collision check will ignore the presence of entities (this is to enable predators)
+		# 	can_rest: if True, the entity can choose not to move (this messes with predator AI)
+		# """
+		# choices = []
+		# up      = (0,1)
+		# down    = (0,-1)
+		# left    = (-1,0)
+		# right   = (1,0)
+		# nothing = (0,0)
 		
-		if can_rest:
-			if self.center_y == ent.center_y or self.center_x == ent.center_x:
-				choices.append(nothing)
+		# if can_rest:
+		# 	if self.center_y == ent.center_y or self.center_x == ent.center_x:
+		# 		choices.append(nothing)
 		
-		if self.center_y > ent.center_y:
-			choices.append(down)  
-		else:
-			choices.append(up)
+		# if self.center_y > ent.center_y:
+		# 	choices.append(down)  
+		# else:
+		# 	choices.append(up)
 		
-		if self.center_x > ent.center_x:
-			choices.append(left) 
-		else:
-			choices.append(right)
+		# if self.center_x > ent.center_x:
+		# 	choices.append(left) 
+		# else:
+		# 	choices.append(right)
 
-		choices_ret = []
-		for c in choices:
-			if direction == "away":
-				c = (c[0] * -1, c[1] * -1)
-			candidate = add_coords(self.coords, c)
-			if TILEMAP[candidate].isclear(movement_mask):
-				choices_ret.append(candidate)
-		try:
-			return random.choice(choices_ret)
-		except IndexError:
-			return self.coords
+		# choices_ret = []
+		# for c in choices:
+		# 	if direction == "away":
+		# 		c = (c[0] * -1, c[1] * -1)
+		# 	candidate = add_coords(self.coords, c)
+		# 	if TILEMAP[candidate].isclear(movement_mask):
+		# 		choices_ret.append(candidate)
+		# try:
+		# 	return random.choice(choices_ret)
+		# except IndexError:
+		# 	return self.coords
+		return find_next_path_step(self, ent, movement_mask)
 
 	def die(self):
 		global ENTITY_HASH
@@ -108,6 +110,21 @@ class Pig(AIAnimal):
 		self.reached_target = False
 
 	def update(self):
+		"""
+		Next update of Pig movement will follow this:
+
+			1. Am I trying to mate?
+				Am I next to another pig?
+					Mate!
+				Move toward nearest pig
+			2. Do I see bird poop?
+				Move toward/on top of it
+					Now I'm trying to mate.
+			3. Am I next to a forest?
+				Chomp it
+				Or else just move toward a forest.
+				
+		"""
 		global TILEMAP
 		TILEMAP[self.coords].move_outof()
 		new_coords  = self.decide_direction()
@@ -131,18 +148,18 @@ class Pig(AIAnimal):
 			Else, find the nearest water and move toward it.
 			Once I get there, start moving randomly.
 		"""
-		nearest_snake = self.find_nearest("snake")
-		if nearest_snake and distance_between_centers(self, nearest_snake) <= (self.sightrange * TILE_SIZE):
-			return self.select_movement(nearest_snake, direction="away")
+		# nearest_snake = self.find_nearest("snake")
+		# if nearest_snake and distance_between_centers(self, nearest_snake) <= (self.sightrange * TILE_SIZE):
+		# 	return self.select_movement(nearest_snake, direction="away")
+		# else:
+		if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
+			self.reached_target = True
+		if not self.terrain_target and not self.reached_target:
+			self.terrain_target = self.find_nearest("water", search_type="terrain")
+			target = self.terrain_target
 		else:
-			if self.terrain_target and distance_between_centers(self, self.terrain_target) < 2 * TILE_SIZE:
-				self.reached_target = True
-			if not self.terrain_target and not self.reached_target:
-				self.terrain_target = self.find_nearest("water", search_type="terrain")
-				target = self.terrain_target
-			else:
-				target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
-			return self.select_movement(target)				
+			target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
+		return self.select_movement(target)				
 
 
 class Snake(AIAnimal):
@@ -193,8 +210,7 @@ class Snake(AIAnimal):
 			Move toward the nearest pig. (I move 2 tiles per turn)
 			If I move on top of my target, stop and also skip my next move.
 		"""
-		target     = self.find_nearest("pig")
-		new_coords = self.select_movement(target, movement_mask="predator", can_rest=False) if target else find_any_adjacent_clear_tile(self.coords)
+		target = self.find_nearest("pig")
+		new_coords = self.select_movement(target, movement_mask="predator") if target else find_any_adjacent_clear_tile(self.coords)
 		return new_coords
-
 

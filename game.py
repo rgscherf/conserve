@@ -31,17 +31,15 @@ import random
 class Game(Widget):
     def __init__(self):
         super(Game, self).__init__()
-        self.tilesize            = TILE_SIZE
-        self.sidelength          = MAP_SIZE
-        self.size                = (self.tilesize*self.sidelength, self.tilesize*self.sidelength)
+        self.size                = (TILE_SIZE*MAP_SIZE, TILE_SIZE*MAP_SIZE)
         self.can_take_turn       = True
 
         self.keyboard = Window.request_keyboard(self.keyboard_close, self)
         self.keyboard.bind(on_key_down=self.keydown)
 
         self.generate_map()
-        self.spawn_feature(feature="forest", numfeatures=int(math.floor((self.sidelength**2) / 12)), spawn_chance=0.6)
-        self.spawn_feature(feature="water", numfeatures=int(math.floor((self.sidelength**2) / 40)), spawn_chance=0.4 )
+        self.spawn_feature(feature="forest", numfeatures=int(math.floor((MAP_SIZE**2) / 12)), spawn_chance=0.6)
+        self.spawn_feature(feature="water", numfeatures=int(math.floor((MAP_SIZE**2) / 40)), spawn_chance=0.4 )
 
         for i in TILEMAP:
             self.add_widget(TILEMAP[i])
@@ -54,10 +52,10 @@ class Game(Widget):
 
     def generate_map(self):
         global TILEMAP
-        for y in range(self.sidelength):
-            for x in range(self.sidelength):
-                coords = (x*self.tilesize, y*self.tilesize)
-                TILEMAP[(x, y)] = Tile(coords)
+        for y in range(MAP_SIZE):
+            for x in range(MAP_SIZE):
+                pos = coord_to_pixel((x,y))
+                TILEMAP[(x, y)] = Tile(pos)
 
     def spawn_feature(self, feature, numfeatures, spawn_chance=0.6, blocking=True):
         # takes a type of feature and a number of them to spawn
@@ -91,7 +89,7 @@ class Game(Widget):
 
     def spawn_player(self):
         global GAMEINFO
-        c = find_any_clear_tile(self.sidelength)
+        c = find_any_clear_tile(MAP_SIZE)
 
         self.player = Player(pos=coord_to_pixel(c))
         TILEMAP[c].move_into(self.player)
@@ -99,7 +97,7 @@ class Game(Widget):
 
     def spawn_AIAnimal(self, entityclass, num):
         for i in range(num):
-            c = find_any_clear_tile(self.sidelength)
+            c = find_any_clear_tile(MAP_SIZE)
             if c[0] < 998:
                 p = entityclass(pos=coord_to_pixel(c))
             else:

@@ -2,6 +2,7 @@
 
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
+from tileutils import pixel_to_coord
 
 
 class Sprite(Image):
@@ -23,6 +24,7 @@ class Tile(Widget):
     def __init__(self, pos):
         super(Tile, self).__init__()
         self.pos = pos
+        self.coords = pixel_to_coord(pos)
         self._entity = None
         self._foreground = None
         self.foreground_type = None
