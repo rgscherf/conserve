@@ -68,7 +68,7 @@ class AStarGridNode(object):
 
 def make_graph(mask, mecoord, targetcoord):
     nodes = {(coord[0], coord[1]): AStarGridNode(coord) for coord in TILEMAP if TILEMAP[coord].isclear(mask)}
-    if mecoord not in nodes: # is this necessary??
+    if mecoord not in nodes:
         nodes[mecoord] = AStarGridNode(mecoord)
     if targetcoord not in nodes:
         nodes[targetcoord] = AStarGridNode(targetcoord)
@@ -78,9 +78,8 @@ def make_graph(mask, mecoord, targetcoord):
             continue
         node = nodes[(x,y)]
         graph[node] = []
-        for i, j in [(0,1), (0,-1), (1,0), (-1,0)]: # product([-1, 0, 1], [-1, 0, 1]):
+        for i, j in [(0,1), (0,-1), (1,0), (-1,0)]:
             coord = (x+i, y+j)
-            # if not is_coord_inside_map(coord) or not TILEMAP[coord].isclear(mask=mask):
             if not is_coord_inside_map(coord) or not coord in nodes:
                 continue
             graph[node].append(nodes[coord])

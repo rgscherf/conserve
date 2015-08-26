@@ -13,7 +13,7 @@ class Player(Sprite):
         global ENTITY_ID
         global ENTITY_HASH
         global TILEMAP
-        self.entity_type = "player"
+        self.id_type = "player"
         self.coords = pixel_to_coord(pos)
         self.entity_id = ENTITY_ID
         ENTITY_ID += 1
@@ -75,7 +75,7 @@ class Dart(Sprite):
         global TILEMAP
         self.direction = (direction[0] * ARROW_SPEED, direction[1] * ARROW_SPEED)
         self.coords = pixel_to_coord(self.pos)
-        self.entity_type = "dart"
+        self.id_type = "dart"
         self.isactive = True
         self.dirmod = -1 if (direction == (-1, 0) or direction == (0, -1)) else 1
         TILEMAP[self.coords].move_into(self)

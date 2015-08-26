@@ -60,13 +60,13 @@ def coord_to_pixel(coordtup):
     return (x, y)
 
 
-def distance_between_pixels(a, b):
+def distance_between_tuples(a, b):
     w_square = abs(a[0] - b[0]) ** 2
     h_square = abs(a[1] - b[1]) ** 2
     return math.sqrt(w_square + h_square)
 
 
-def distance_between_centers(a, b):
+def distance_between_entities(a, b):
     acenter = a.center
     bcenter = b.center
     w_square = abs(acenter[0] - bcenter[0]) ** 2
@@ -74,11 +74,19 @@ def distance_between_centers(a, b):
     return math.sqrt(w_square + h_square)
 
 
+def is_coord_adjacent(a,b):
+    return True if (abs(a[0]-b[0]) == 1 and a[1] == b[1]) or (abs(a[1]-b[1]) == 1 and a[0] == b[0]) else False
+
+
+def is_adjacent(me, other):
+    return is_coord_adjacent(me.coords, other.coords)
+
+
 def find_entities_in_radius(me, coord_radius):
     entities_in_range = []
     radius = coord_radius * TILE_SIZE
     for e in ENTITY_HASH:
-        if distance_between_pixels(me.center, e.center) <= radius:
+        if distance_between_tuples(me.center, e.center) <= radius:
             entities_in_range.append(e)
     return entities_in_range
 
@@ -108,10 +116,10 @@ def is_coord_inside_map(c):
 def check_for_collision(me, coords=None):
     if coords:
         for k, e in ENTITY_HASH.items():
-            if coords == e.coords and e.entity_type != me.entity_type and e.entity_type != "player":
+            if coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
                 return e
     else:
         for k, e in ENTITY_HASH.items():
-            if me.coords == e.coords and e.entity_type != me.entity_type and e.entity_type != "player":
+            if me.coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
                 return e
     return None

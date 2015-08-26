@@ -75,12 +75,12 @@ class Game(Widget):
             return new_coords
 
         for _ in range(numfeatures):
-            continue_spawning    = True if spawn_chance != 0 else False
+            continue_spawning = True if spawn_chance != 0 else False
 
             coords = find_any_clear_tile(blocking)
             TILEMAP[coords].add_foreground(feature, blocking) # spawn 1 feature...
 
-            while continue_spawning == True:
+            while continue_spawning:
                 if random.random() > spawn_chance: # ... and maybe more.
                     continue_spawning = False
                     break
@@ -117,11 +117,11 @@ class Game(Widget):
         self.player.update(keycode)
 
         for k, v in ENTITY_HASH.items():
-            if v.entity_type == "snake":
+            if v.id_type == "snake":
                 v.update()
 
         for k, v in ENTITY_HASH.items():
-            if v.entity_type == "pig":
+            if v.id_type == "pig":
                 v.update()
 
         self.key = None
