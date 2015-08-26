@@ -31,6 +31,8 @@ import random
 class Game(Widget):
     def __init__(self):
         super(Game, self).__init__()
+        global GAMEINFO
+        GAMEINFO["gameinstance"] = self
         self.size                = (TILE_SIZE*MAP_SIZE, TILE_SIZE*MAP_SIZE)
         self.can_take_turn       = True
 

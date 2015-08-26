@@ -2,7 +2,7 @@
 
 from kivy.animation import Animation
 
-from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, GAMEINFO
 from astar import find_next_path_step
 from tileutils import *
 from tile import Sprite
@@ -59,7 +59,6 @@ class AIAnimal(Sprite):
 	def die(self):
 		global ENTITY_HASH
 		global TILEMAP
-
 		TILEMAP[self.coords].move_outof()
 		del ENTITY_HASH[self.entity_id]
 		self.color = (1,1,1,0.5)
@@ -73,24 +72,10 @@ class Pig(AIAnimal):
 		self.target = None
 
 	def update(self):
-		"""
-		Next update of Pig movement will follow this:
-
-			1. Am I trying to mate?
-				Am I next to another pig?
-					Mate!
-				Move toward nearest pig
-			# 2. Do I see bird poop?
-			# 	Move toward/on top of it
-			# 		Now I'm trying to mate.
-			3. Am I next to a forest?
-				Chomp it
-			4. Move toward the closest forest.
-				
-		"""
 		global TILEMAP
+
 		TILEMAP[self.coords].move_outof()
-		
+
 		if not self.target:
 			self.target = self.find_nearest("forest", search_type="terrain")
 		new_coords = self.get_astar(self.target)
@@ -111,42 +96,31 @@ class Snake(AIAnimal):
 		super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
 		self.id_type = "snake"
 		self.num_moves = 2
-		self.resting = False
-		self.collided_with_key = None
-		self.collided_with_entity = None
 		self.target = None
 
 	def update(self):
-		# global TILEMAP
-
-		# movelog = {}
-		# for i in range(self.num_moves):
-		# 	TILEMAP[self.coords].move_outof()
-		# 	self.coords = self.select_move()
-		# 	TILEMAP[self.coords].move_into(self)
-		# 	movelog[i] = self.coords
-			
-		# 	collided = check_for_collision(self)
-		# 	if collided:
-		# 		collided.die()
-		# 		self.target = None
+		global TILEMAP
+		movelog = {}
+		for i in range(self.num_moves):
+			TILEMAP[self.coords].move_outof()
+			self.coords = self.select_move()
+			TILEMAP[self.coords].move_into(self)
+			movelog[i] = self.coords
+			collided = check_for_collision(self)
+			if collided:
+				collided.die()
+				self.target = None
 		
-		# first_move_px  = coord_to_pixel(movelog[0])
-		# try:
-		# 	second_move_px = coord_to_pixel(movelog[1])
-		# except KeyError:
-		# 	second_move_px = first_move_px
+		first_move_px  = coord_to_pixel(movelog[0])
+		try:
+			second_move_px = coord_to_pixel(movelog[1])
+		except KeyError:
+			second_move_px = first_move_px
 
-		# anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
-		# anim.start(self)
-
-		pass
+		anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
+		anim.start(self)
 
 	def select_move(self):
-		"""
-			Move toward the nearest pig. (I move 2 tiles per turn)
-			If I move on top of my target, stop and also skip my next move.
-		"""
 		if not self.target or not self.target.isalive:
 			try:
 				self.target = self.find_nearest("pig")
