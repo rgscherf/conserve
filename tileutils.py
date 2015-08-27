@@ -3,7 +3,6 @@ from globalvars import TILEMAP, MAP_SIZE, TILE_SIZE, ENTITYMAP
 import random
 import math
 
-
 def find_any_adjacent_clear_tile(c, blocking=True):
     for i in range(100):
         # get coords of one tile to the right, left, up, down

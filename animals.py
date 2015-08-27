@@ -6,6 +6,7 @@ from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITYMAP, TILEMAP, GAMEI
 from astar import find_next_path_step
 from tileutils import *
 from tile import Sprite
+from snakebod import SnakeBod
 
 import random
 
@@ -96,6 +97,7 @@ class Pig(AIAnimal):
         TILEMAP[self.coords].move_into(self)
 
 
+
 class Snake(AIAnimal):
     def __init__(self, pos):
         super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
@@ -104,7 +106,14 @@ class Snake(AIAnimal):
         self.target = None
 
     def update(self):
+        """ TODO: add cells to SNAKEBOD as snake moves
+            Snake can't move into a cell occupied by SNAKEBOD
+            SNAKEBOD cells need to block tilemap and need some kind of sprite
+            When SNAKEBOD segments are killed, need to convert to trees
+            
+        """
         pass
+
         # global TILEMAP
         # movelog = {}
         # for i in range(self.num_moves):
