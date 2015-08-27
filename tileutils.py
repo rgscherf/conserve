@@ -1,4 +1,4 @@
-from globalvars import TILEMAP, MAP_SIZE, TILE_SIZE, ENTITY_HASH
+from globalvars import TILEMAP, MAP_SIZE, TILE_SIZE, ENTITYMAP
 
 import random
 import math
@@ -69,9 +69,7 @@ def distance_between_tuples(a, b):
 def distance_between_entities(a, b):
     acenter = a.center
     bcenter = b.center
-    w_square = abs(acenter[0] - bcenter[0]) ** 2
-    h_square = abs(acenter[1] - bcenter[1]) ** 2
-    return math.sqrt(w_square + h_square)
+    return distance_between_tuples(acenter, bcenter)
 
 
 def is_coord_adjacent(a,b):
@@ -85,7 +83,7 @@ def is_adjacent(me, other):
 def find_entities_in_radius(me, coord_radius):
     entities_in_range = []
     radius = coord_radius * TILE_SIZE
-    for e in ENTITY_HASH:
+    for e in ENTITYMAP:
         if distance_between_tuples(me.center, e.center) <= radius:
             entities_in_range.append(e)
     return entities_in_range
@@ -115,11 +113,11 @@ def is_coord_inside_map(c):
 
 def check_for_collision(me, coords=None):
     if coords:
-        for k, e in ENTITY_HASH.items():
+        for k, e in ENTITYMAP.items():
             if coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
                 return e
     else:
-        for k, e in ENTITY_HASH.items():
+        for k, e in ENTITYMAP.items():
             if me.coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
                 return e
     return None

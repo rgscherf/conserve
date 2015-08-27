@@ -2,7 +2,7 @@
 
 from kivy.animation import Animation
 
-from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITY_HASH, TILEMAP, GAMEINFO
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITYMAP, TILEMAP, GAMEINFO
 from astar import find_next_path_step
 from tileutils import *
 from tile import Sprite
@@ -18,13 +18,13 @@ class AIAnimal(Sprite):
     def __init__(self, source, pos):
         super(AIAnimal, self).__init__(source=source, pos=pos)
         global ENTITY_ID
-        global ENTITY_HASH
+        global ENTITYMAP
         global TILEMAP
         self.lastcoords = (999,999)
         self.coords = pixel_to_coord(pos)
         self.entity_id = ENTITY_ID
         ENTITY_ID += 1
-        ENTITY_HASH[self.entity_id] = self
+        ENTITYMAP[self.entity_id] = self
         TILEMAP[self.coords].move_into(self)
         self.isalive = True
 
@@ -49,7 +49,7 @@ class AIAnimal(Sprite):
             return random.choice(best_results)
 
         if search_type == "entity":
-            return find_best(ENTITY_HASH)
+            return find_best(ENTITYMAP)
         elif search_type == "terrain":
             return find_best(TILEMAP)
 
@@ -62,10 +62,10 @@ class AIAnimal(Sprite):
         return new_coords
 
     def die(self):
-        global ENTITY_HASH
+        global ENTITYMAP
         global TILEMAP
         TILEMAP[self.coords].move_outof()
-        del ENTITY_HASH[self.entity_id]
+        del ENTITYMAP[self.entity_id]
         self.color = (1,1,1,0.5)
         self.isalive = False
 
@@ -104,26 +104,27 @@ class Snake(AIAnimal):
         self.target = None
 
     def update(self):
-        global TILEMAP
-        movelog = {}
-        for i in range(self.num_moves):
-            TILEMAP[self.coords].move_outof()
-            self.coords = self.select_move()
-            TILEMAP[self.coords].move_into(self)
-            movelog[i] = self.coords
-            collided = check_for_collision(self)
-            if collided:
-                collided.die()
-                self.target = None
+        pass
+        # global TILEMAP
+        # movelog = {}
+        # for i in range(self.num_moves):
+        #     TILEMAP[self.coords].move_outof()
+        #     self.coords = self.select_move()
+        #     TILEMAP[self.coords].move_into(self)
+        #     movelog[i] = self.coords
+        #     collided = check_for_collision(self)
+        #     if collided:
+        #         collided.die()
+        #         self.target = None
         
-        first_move_px  = coord_to_pixel(movelog[0])
-        try:
-            second_move_px = coord_to_pixel(movelog[1])
-        except KeyError:
-            second_move_px = first_move_px
+        # first_move_px  = coord_to_pixel(movelog[0])
+        # try:
+        #     second_move_px = coord_to_pixel(movelog[1])
+        # except KeyError:
+        #     second_move_px = first_move_px
 
-        anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
-        anim.start(self)
+        # anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
+        # anim.start(self)
 
     def select_move(self):
         if not self.target or not self.target.isalive:

@@ -3,12 +3,9 @@
 from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.widget import Widget
-# from kivy.clock import Clock
-# from kivy.uix.label import Label
-# from kivy.core.audio import SoundLoader
 
-from globalvars import *
 from tileutils import *
+from globalvars import MAP_SIZE, TILE_SIZE, ENTITYMAP, PLAYER_ENTITIES, TILEMAP, GAMEINFO
 
 from animals import Snake, Pig
 from player import Player
@@ -118,11 +115,11 @@ class Game(Widget):
         self.move_darts()
         self.player.update(keycode)
 
-        for k, v in ENTITY_HASH.items():
+        for k, v in ENTITYMAP.items():
             if v.id_type == "snake":
                 v.update()
 
-        for k, v in ENTITY_HASH.items():
+        for k, v in ENTITYMAP.items():
             if v.id_type == "pig":
                 v.update()
 

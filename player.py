@@ -11,13 +11,13 @@ class Player(Sprite):
     def __init__(self, pos):
         super(Player, self).__init__(source="images/player.png", pos=pos)
         global ENTITY_ID
-        global ENTITY_HASH
+        global ENTITYMAP
         global TILEMAP
         self.id_type = "player"
         self.coords = pixel_to_coord(pos)
         self.entity_id = ENTITY_ID
         ENTITY_ID += 1
-        ENTITY_HASH[self.entity_id] = self
+        ENTITYMAP[self.entity_id] = self
         TILEMAP[self.coords].move_into(self)
 
     def update(self, key):
