@@ -3,6 +3,7 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from tileutils import pixel_to_coord
+from animals import Snake
 
 
 class Sprite(Image):
@@ -36,6 +37,8 @@ class Tile(Widget):
         self._entity = new_entity
 
     def move_outof(self):
+        if type(self._entity) == Snake:
+            return
         self._entity = None
 
     def isclear(self, mask=None):
@@ -48,10 +51,12 @@ class Tile(Widget):
             if has_entity:
                 has_player = self._entity.id_type == "player"
                 has_dart = self._entity.id_type == "dart"
+                has_snake = self._entity.id_type == "snake"
             else:
                 has_player = False
                 has_dart = False
-            return (not has_foreground) and not (has_player or has_dart)
+                has_snake = False
+            return (not has_foreground) and not (has_player or has_dart or has_snake)
         
         elif mask=="flying":
             if has_entity:

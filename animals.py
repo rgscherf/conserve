@@ -104,36 +104,36 @@ class Snake(AIAnimal):
         self.id_type = "snake"
         self.num_moves = 2
         self.target = None
+        self.body = SnakeBod(self.coords)
 
     def update(self):
         """ TODO: add cells to SNAKEBOD as snake moves
             Snake can't move into a cell occupied by SNAKEBOD
             SNAKEBOD cells need to block tilemap and need some kind of sprite
             When SNAKEBOD segments are killed, need to convert to trees
-            
+
         """
-        pass
-
-        # global TILEMAP
-        # movelog = {}
-        # for i in range(self.num_moves):
-        #     TILEMAP[self.coords].move_outof()
-        #     self.coords = self.select_move()
-        #     TILEMAP[self.coords].move_into(self)
-        #     movelog[i] = self.coords
-        #     collided = check_for_collision(self)
-        #     if collided:
-        #         collided.die()
-        #         self.target = None
+        global TILEMAP
+        movelog = {}
+        for i in range(self.num_moves):
+            TILEMAP[self.coords].move_outof()
+            self.coords = self.select_move()
+            self.body.append(self.coords)
+            TILEMAP[self.coords].move_into(self)
+            movelog[i] = self.coords
+            collided = check_for_collision(self)
+            if collided:
+                collided.die()
+                self.target = None
         
-        # first_move_px  = coord_to_pixel(movelog[0])
-        # try:
-        #     second_move_px = coord_to_pixel(movelog[1])
-        # except KeyError:
-        #     second_move_px = first_move_px
+        first_move_px  = coord_to_pixel(movelog[0])
+        try:
+            second_move_px = coord_to_pixel(movelog[1])
+        except KeyError:
+            second_move_px = first_move_px
 
-        # anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
-        # anim.start(self)
+        anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
+        anim.start(self)
 
     def select_move(self):
         if not self.target or not self.target.isalive:
