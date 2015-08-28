@@ -90,7 +90,7 @@ class Dart(Sprite):
 
         self.coords = new_coords
         collided = check_for_collision(self, self.coords)
-        if collided:
+        if collided and not collided.id_type == "dart":
             collided.die(self.coords)
         TILEMAP[self.coords].move_into(self)
 
@@ -132,4 +132,5 @@ class Dart(Sprite):
         global TILEMAP
         self.isactive = False
         TILEMAP[coords].stop_dart(self)
+        self.source = "images/grass_long.png"
         return coords

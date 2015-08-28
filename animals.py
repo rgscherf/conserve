@@ -79,9 +79,7 @@ class Pig(AIAnimal):
 
     def update(self):
         global TILEMAP
-
         TILEMAP[self.coords].move_outof()
-
         if not self.target:
             self.target = self.find_nearest("forest", search_type="terrain")
         new_coords = self.get_astar(self.target)
@@ -101,9 +99,10 @@ class Snake(AIAnimal):
     def __init__(self, pos):
         self.id_type = "snake"
         super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
-        self.num_moves = 2
+        self.num_moves = 1
         self.target = None
         self.body = SnakeBod(self.coords)
+        self.skip = False
 
     def update(self):
         """ TODO: add cells to SNAKEBOD as snake moves
@@ -114,6 +113,9 @@ class Snake(AIAnimal):
         """
         global TILEMAP
         movelog = {}
+        if self.skip: # super disorienting not to skip next turn after prune
+            self.skip = False
+            return
         for i in range(self.num_moves):
             # TILEMAP[self.coords].move_outof()
             self.coords = self.select_move()
@@ -140,14 +142,15 @@ class Snake(AIAnimal):
 
     def select_move(self):
         if not self.target or not self.target.isalive:
-            try:
-                self.target = self.find_nearest("pig")
-            except:
-                # this code path is borked. Need to target an entity, not coords.
-                self.target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
+            self.target = self.find_nearest("pig")
         new_coords = self.get_astar(self.target, movement_mask="predator")
         return new_coords
 
     def die(self, hitcoord):
-        self.body.prune(hitcoord)
+        new_coords = self.body.prune(hitcoord)
+        self.coords = new_coords
+        new_pos = coord_to_pixel(self.coords)
+        anim = Animation(x=new_pos[0], y=new_pos[1], duration=0.1)
+        anim.start(self)
+        self.skip = True
 
