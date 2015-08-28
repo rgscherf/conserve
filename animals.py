@@ -109,9 +109,10 @@ class Snake(AIAnimal):
         """ TODO: 
             DONE add cells to SNAKEBOD as snake moves
             DONE Snake can't move into a cell occupied by SNAKEBOD
-            snakebod needs to lay directional sprites behind it
-            SNAKEBOD cells need to block tilemap and need some kind of sprite
-            When SNAKEBOD segments are killed, need to convert to trees
+            DONE SNAKEBOD cells need to block tilemap and need some kind of sprite
+            DONE snakebod needs to lay directional sprites behind it
+            DONE When SNAKEBOD segments are killed, need to convert to trees
+            when eaten, pigs need to be removed() and pass thru snake
 
         """
         global TILEMAP
