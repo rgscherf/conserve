@@ -103,41 +103,39 @@ class Snake(AIAnimal):
         self.target = None
         self.body = SnakeBod(self.coords)
         self.skip = False
+        self.lastcoords = None
 
     def update(self):
-        """ TODO: add cells to SNAKEBOD as snake moves
-            Snake can't move into a cell occupied by SNAKEBOD
+        """ TODO: 
+            DONE add cells to SNAKEBOD as snake moves
+            DONE Snake can't move into a cell occupied by SNAKEBOD
+            snakebod needs to lay directional sprites behind it
             SNAKEBOD cells need to block tilemap and need some kind of sprite
             When SNAKEBOD segments are killed, need to convert to trees
 
         """
         global TILEMAP
-        movelog = {}
         if self.skip: # super disorienting not to skip next turn after prune
             self.skip = False
             return
-        for i in range(self.num_moves):
-            # TILEMAP[self.coords].move_outof()
-            self.coords = self.select_move()
-            TILEMAP[self.coords].move_into(self)
-            movelog[i] = self.coords
-            collided = check_for_collision(self)
-            if collided:
-                collided.die()
-                self.target = None
-            
-        first_move_px  = coord_to_pixel(movelog[0])
-        try:
-            second_move_px = coord_to_pixel(movelog[1])
-        except KeyError:
-            second_move_px = first_move_px
 
-        anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
+        self.lastcoords = self.coords
+        self.coords = self.select_move() 
+        if self.coords == self.lastcoords:
+            return
+        collided = check_for_collision(self)
+        if collided:
+            collided.die()
+            self.target = None
+        
+        new_pixels = coord_to_pixel(self.coords)
+        anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.05)
         anim.start(self)
+
         GAMEINFO["gameinstance"].remove_widget(self)
-        for k, v in movelog.items():
-            self.body.append(v)
+        self.body.append(self.coords)
         GAMEINFO["gameinstance"].add_widget(self)
+        TILEMAP[self.coords].move_into(self)
             
 
     def select_move(self):
