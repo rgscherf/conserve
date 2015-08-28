@@ -73,9 +73,9 @@ class AIAnimal(Sprite):
 
 class Pig(AIAnimal):
     def __init__(self, pos):
-        super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
         self.id_type = "pig"
         self.target = None
+        super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
 
     def update(self):
         global TILEMAP
@@ -97,11 +97,10 @@ class Pig(AIAnimal):
         TILEMAP[self.coords].move_into(self)
 
 
-
 class Snake(AIAnimal):
     def __init__(self, pos):
-        super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
         self.id_type = "snake"
+        super(Snake, self).__init__(source=self.animal_sprites["snake"], pos=pos)
         self.num_moves = 2
         self.target = None
         self.body = SnakeBod(self.coords)
@@ -116,16 +115,15 @@ class Snake(AIAnimal):
         global TILEMAP
         movelog = {}
         for i in range(self.num_moves):
-            TILEMAP[self.coords].move_outof()
+            # TILEMAP[self.coords].move_outof()
             self.coords = self.select_move()
-            self.body.append(self.coords)
             TILEMAP[self.coords].move_into(self)
             movelog[i] = self.coords
             collided = check_for_collision(self)
             if collided:
                 collided.die()
                 self.target = None
-        
+            
         first_move_px  = coord_to_pixel(movelog[0])
         try:
             second_move_px = coord_to_pixel(movelog[1])
@@ -134,6 +132,11 @@ class Snake(AIAnimal):
 
         anim = Animation(x=first_move_px[0], y=first_move_px[1], duration=0.05) + Animation(x=second_move_px[0], y=second_move_px[1], duration=0.05)
         anim.start(self)
+        GAMEINFO["gameinstance"].remove_widget(self)
+        for k, v in movelog.items():
+            self.body.append(v)
+        GAMEINFO["gameinstance"].add_widget(self)
+            
 
     def select_move(self):
         if not self.target or not self.target.isalive:
@@ -144,4 +147,7 @@ class Snake(AIAnimal):
                 self.target = TILEMAP[find_any_adjacent_clear_tile(self.coords)]
         new_coords = self.get_astar(self.target, movement_mask="predator")
         return new_coords
+
+    def die(self, hitcoord):
+        self.body.prune(hitcoord)
 

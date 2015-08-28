@@ -6,5 +6,5 @@ ENTITYMAP = {}
 PLAYER_ENTITIES = []
 # PLAYER_ENTITIES_INACTIVE = []
 TILEMAP = {}
-GAMEINFO = {}
+GAMEINFO = {} # playerid, gameinstance
 # REMOVE = []

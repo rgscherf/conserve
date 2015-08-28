@@ -3,7 +3,7 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from tileutils import pixel_to_coord
-from animals import Snake
+
 
 
 class Sprite(Image):
@@ -29,52 +29,41 @@ class Tile(Widget):
         self._entity = None
         self._foreground = None
         self.id_type = None
+        self.snakebod = None
 
         self.bg = Sprite(source=self.tiledict["bg"], pos=self.pos)
         self.add_widget(self.bg)
 
     def move_into(self, new_entity):
         self._entity = new_entity
+        if new_entity.id_type == "snake":
+            self.snakebod = new_entity
 
-    def move_outof(self):
-        if type(self._entity) == Snake:
-            return
+    def move_outof(self, clear_snakebod=False):
         self._entity = None
+        if clear_snakebod:
+            self.snakebod = None
 
     def isclear(self, mask=None):
         has_foreground = True if self._foreground else False
         has_entity = True if self._entity else False
+        has_player = self._entity.id_type == "player" if has_entity else False
+        has_dart = self._entity.id_type == "dart" if has_entity else False
+        has_snake = self._entity.id_type == "snake" if has_entity else False
 
         if mask=="predator":
-            # predators will not move into a tile that has a player or dart.
-            # in addition to terrain features
-            if has_entity:
-                has_player = self._entity.id_type == "player"
-                has_dart = self._entity.id_type == "dart"
-                has_snake = self._entity.id_type == "snake"
-            else:
-                has_player = False
-                has_dart = False
-                has_snake = False
             return (not has_foreground) and not (has_player or has_dart or has_snake)
         
         elif mask=="flying":
-            if has_entity:
-                has_player = self._entity.id_type == "player"
-            else:
-                has_player = False
             return not has_foreground and not has_player
-
         
         elif mask=="player":
-            # players can move over any animal, and darts
-            # but can't move through terrain
-            return not has_foreground
+            return True if has_dart else not (has_foreground or has_entity)
         
         else:
             return not (has_foreground or has_entity)
 
-    def add_foreground(self, foreground, blocking): # blocking is deprecated..
+    def add_foreground(self, foreground, blocking=True): # blocking is deprecated..
         if self._foreground:
             self.clear_foreground()
         self._foreground = Sprite(source=self.tiledict[foreground], pos=self.pos)

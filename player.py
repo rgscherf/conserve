@@ -89,9 +89,9 @@ class Dart(Sprite):
         anim.start(self)
 
         self.coords = new_coords
-        collided = check_for_collision(self)
+        collided = check_for_collision(self, self.coords)
         if collided:
-            collided.die()
+            collided.die(self.coords)
         TILEMAP[self.coords].move_into(self)
 
     def decide_how_far_to_travel(self):
