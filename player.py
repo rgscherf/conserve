@@ -85,7 +85,8 @@ class Dart(Sprite):
         new_coords = self.decide_how_far_to_travel()
         new_pixels = coord_to_pixel(new_coords)
 
-        anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.1)
+        dist = distance_between_tuples(self.coords, new_coords) / float(TILE_SIZE)
+        anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=(0.2*dist))
         anim.start(self)
 
         self.coords = new_coords
