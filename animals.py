@@ -91,12 +91,13 @@ class Pig(AIAnimal):
         TILEMAP[self.coords].move_into(self)
 
     def die(self):
-        global ENTITYMAP
         global TILEMAP
         TILEMAP[self.coords].move_outof()
-        del ENTITYMAP[self.entity_id]
         self.color = (1,1,1,0.5)
+        GAMEINFO["gameinstance"].remove_widget(self)
+        GAMEINFO["gameinstance"].add_widget(self)
         self.isalive = False
+
 
 class Snake(AIAnimal):
     def __init__(self, pos):
@@ -105,8 +106,9 @@ class Snake(AIAnimal):
         self.num_moves = 1
         self.target = None
         self.body = SnakeBod(self.coords)
-        self.skip = False
+        self.skip_from_prune = False
         self.lastcoords = None
+        self.digesting = None
 
     def update(self):
         """ TODO: 
@@ -115,14 +117,47 @@ class Snake(AIAnimal):
             DONE SNAKEBOD cells need to block tilemap and need some kind of sprite
             DONE snakebod needs to lay directional sprites behind it
             DONE When SNAKEBOD segments are killed, need to convert to trees
-            when eaten, pigs need to be removed() and pass thru snake
+            DONE when eaten, pigs need to be removed() and pass thru snake
 
         """
         global TILEMAP
-        if self.skip: # super disorienting not to skip next turn after prune
-            self.skip = False
+        if self.skip_from_prune: # super disorienting not to skip next turn after prune
+            self.skip_from_prune = False
             return
+        elif self.digesting:
+            self.digest()
+        else:
+            self.move()
+            
+    def digest(self):
+        movelist = []
+        should_stop = False
+        for _ in range(2):
+            current_segment = self.body[self.digesting.coords]
+            if current_segment == self.body.tail:
+                should_stop = True
+                break
+            self.digesting.coords = current_segment.prev.coords
+            new_pos = coord_to_pixel(self.digesting.coords)
+            movelist.append(new_pos)
 
+        if len(movelist) < 2:
+            movelist.append(coord_to_pixel(self.digesting.coords))
+            movelist.append(coord_to_pixel(self.digesting.coords))
+        anim = Animation(x=movelist[0][0], y=movelist[0][1], duration=0.01) + \
+               Animation(x=movelist[1][0], y=movelist[1][1], duration=0.01)
+        anim.start(self.digesting)
+
+        if should_stop:
+            self.finish_digesting()
+
+    def finish_digesting(self):
+        global ENTITYMAP
+        GAMEINFO["gameinstance"].remove_widget(self.digesting)
+        del ENTITYMAP[self.digesting.entity_id]
+        self.digesting = False
+
+    def move(self):
         self.lastcoords = self.coords
         self.coords = self.select_move() 
         if self.coords == self.lastcoords:
@@ -130,6 +165,7 @@ class Snake(AIAnimal):
         collided = check_for_collision(self)
         if collided:
             collided.die()
+            self.digesting = collided
             self.target = None
         
         new_pixels = coord_to_pixel(self.coords)
@@ -139,8 +175,7 @@ class Snake(AIAnimal):
         GAMEINFO["gameinstance"].remove_widget(self)
         self.body.append(self.coords)
         GAMEINFO["gameinstance"].add_widget(self)
-        TILEMAP[self.coords].move_into(self)
-            
+        TILEMAP[self.coords].move_into(self)        
 
     def select_move(self):
         if not self.target or not self.target.isalive:
@@ -149,10 +184,12 @@ class Snake(AIAnimal):
         return new_coords
 
     def die(self, hitcoord):
-        new_coords = self.body.prune(hitcoord)
+        new_coords, finish_digesting = self.body.prune(hitcoord, self.digesting)
+        if finish_digesting:
+            self.finish_digesting()
         self.coords = new_coords
         new_pos = coord_to_pixel(self.coords)
         anim = Animation(x=new_pos[0], y=new_pos[1], duration=0.1)
         anim.start(self)
-        self.skip = True
+        self.skip_from_prune = True
 

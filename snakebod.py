@@ -58,6 +58,9 @@ class SnakeBod(object):
         self.segments[first] = SnakeSeg(coords=first)
         self.head = self.tail = self.segments[first]
 
+    def __getitem__(self, item):
+        return self.segments[item]
+
     def append(self, coords):
         self.segments[coords] = SnakeSeg(coords=coords, prev=self.head)
         self.head.next = self.segments[coords]
@@ -69,8 +72,9 @@ class SnakeBod(object):
     def next(self, coords):
         return self.segments[coords].next
 
-    def prune(self, coords):
+    def prune(self, coords, digesting=None):
         cells = []
+        finish_digesting = False
         if self.segments[coords] == self.tail:
             cell = self.segments[coords].next
             self.head = self.tail
@@ -85,6 +89,8 @@ class SnakeBod(object):
             cell = cell.next
             if not cell:
                 cont = False
+        if digesting and digesting.coords in cells:
+            finish_digesting = True
         for i in cells:
             try:
                 if i == coords:
@@ -94,7 +100,7 @@ class SnakeBod(object):
                 del self.segments[i]
             except KeyError:
                 pass
-        return self.head.coords
+        return (self.head.coords, finish_digesting)
 
     def __len__(self):
         length = 1

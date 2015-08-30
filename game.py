@@ -116,11 +116,11 @@ class Game(Widget):
         self.player.update(keycode)
 
         for k, v in ENTITYMAP.items():
-            if v.id_type == "snake":
+            if v.id_type == "snake" and v.isalive:
                 v.update()
 
         for k, v in ENTITYMAP.items():
-            if v.id_type == "pig":
+            if v.id_type == "pig" and v.isalive:
                 v.update()
 
         self.key = None
