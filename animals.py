@@ -35,6 +35,9 @@ class AIAnimal(Sprite):
     def update(self):
         raise NotImplementedError("no update() defined for {}").format(self.id_type)
 
+    def die(self):
+        raise NotImplementedError("no die() defined for {}").format(self.id_type)
+
     def find_nearest(self, search_term, search_type="entity"):
         def find_best(hash):
             best_distance = 99999999
@@ -62,13 +65,6 @@ class AIAnimal(Sprite):
             print "{} moving to {} -- HAS NO PATH".format(self, new_coords)
         return new_coords
 
-    def die(self):
-        global ENTITYMAP
-        global TILEMAP
-        TILEMAP[self.coords].move_outof()
-        del ENTITYMAP[self.entity_id]
-        self.color = (1,1,1,0.5)
-        self.isalive = False
 
 
 class Pig(AIAnimal):
@@ -94,6 +90,13 @@ class Pig(AIAnimal):
         anim.start(self)
         TILEMAP[self.coords].move_into(self)
 
+    def die(self):
+        global ENTITYMAP
+        global TILEMAP
+        TILEMAP[self.coords].move_outof()
+        del ENTITYMAP[self.entity_id]
+        self.color = (1,1,1,0.5)
+        self.isalive = False
 
 class Snake(AIAnimal):
     def __init__(self, pos):

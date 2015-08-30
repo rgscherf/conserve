@@ -29,7 +29,7 @@ class SnakeSeg(object):
         self.prev.second_sprite = Sprite(source=second_sprite, pos=coord_to_pixel(self.prev.coords))
         GAMEINFO["gameinstance"].add_widget(self.prev.second_sprite)
 
-    def remove_sprites(self):
+    def remove_sprites(self, dart_location=False):
         GAMEINFO["gameinstance"].remove_widget(self.first_sprite)
         self.first_sprite = None
 
@@ -42,7 +42,8 @@ class SnakeSeg(object):
 
         TILEMAP[self.coords].move_outof(clear_snakebod=True)
         TILEMAP[self.coords].clear_foreground()
-        TILEMAP[self.coords].add_foreground("forest")
+        if not dart_location:
+            TILEMAP[self.coords].add_foreground("forest")
 
     def get_sprite_orientation(self, prevcoord):
         if self.coords[0] - prevcoord[0] != 0:
@@ -86,7 +87,10 @@ class SnakeBod(object):
                 cont = False
         for i in cells:
             try:
-                self.segments[i].remove_sprites()
+                if i == coords:
+                    self.segments[i].remove_sprites(dart_location=True)
+                else:
+                    self.segments[i].remove_sprites(dart_location=False)                    
                 del self.segments[i]
             except KeyError:
                 pass
