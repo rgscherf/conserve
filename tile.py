@@ -44,22 +44,22 @@ class Tile(Widget):
         if clear_snakebod:
             self.snakebod = None
 
-    def isclear(self, mask=None):
+    def isclear(self, movement_mask=None):
         has_foreground = True if self._foreground else False
         has_entity = True if self._entity else False
         has_player = self._entity.id_type == "player" if has_entity else False
         has_dart = self._entity.id_type == "dart" if has_entity else False
         has_snake = self._entity.id_type == "snake" if has_entity else False
-        if mask=="predator":
+        if movement_mask=="predator":
             return (not has_foreground) and not (has_player or has_dart or has_snake)
-        elif mask=="flying":
+        elif movement_mask=="flying":
             return not has_foreground and not has_player
-        elif mask=="player":
+        elif movement_mask=="player":
             return True if has_dart else not (has_foreground or has_entity)
         else:
             return not (has_foreground or has_entity)
 
-    def add_foreground(self, foreground, blocking=True): # blocking is deprecated..
+    def add_foreground(self, foreground):
         if self._foreground:
             self.clear_foreground()
         self._foreground = Sprite(source=self.tiledict[foreground], pos=self.pos)

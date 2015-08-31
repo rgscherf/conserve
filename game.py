@@ -56,7 +56,7 @@ class Game(Widget):
                 pos = coord_to_pixel((x,y))
                 TILEMAP[(x, y)] = Tile(pos)
 
-    def spawn_feature(self, feature, numfeatures, spawn_chance=0.6, blocking=True):
+    def spawn_feature(self, feature, numfeatures, spawn_chance=0.6):
         # takes a type of feature and a number of them to spawn
         # mutates tilemap to add adjacent features to the initial number
         # for each, stop adding adjaents when random.random() > spawn_chance
@@ -67,17 +67,17 @@ class Game(Widget):
             # (in this case, will block until spawn_chance is tripped in parent)
 
             try:
-                new_coords = find_any_adjacent_clear_tile(c, blocking)
+                new_coords = find_any_adjacent_clear_tile(c)
             except IndexError:
                 return c
-            TILEMAP[new_coords].add_foreground(feature, blocking)
+            TILEMAP[new_coords].add_foreground(feature)
             return new_coords
 
         for _ in range(numfeatures):
             continue_spawning = True if spawn_chance != 0 else False
 
-            coords = find_any_clear_tile(blocking)
-            TILEMAP[coords].add_foreground(feature, blocking) # spawn 1 feature...
+            coords = find_any_clear_tile()
+            TILEMAP[coords].add_foreground(feature) # spawn 1 feature...
 
             while continue_spawning:
                 if random.random() > spawn_chance: # ... and maybe more.

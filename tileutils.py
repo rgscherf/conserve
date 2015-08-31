@@ -3,7 +3,7 @@ from globalvars import TILEMAP, MAP_SIZE, TILE_SIZE, ENTITYMAP
 import random
 import math
 
-def find_any_adjacent_clear_tile(c, blocking=True):
+def find_any_adjacent_clear_tile(c, movement_mask=None):
     for i in range(100):
         # get coords of one tile to the right, left, up, down
         # accounting for map bounds
@@ -23,26 +23,19 @@ def find_any_adjacent_clear_tile(c, blocking=True):
             new_coords[1] = c[1]
         new_coords = tuple(new_coords)
 
-        if blocking:
-            if TILEMAP[new_coords].isclear():
-                return new_coords  # only return if you found a clear tile
-        else:
-            raise NotImplementedError("no behavior for nonblocking")
+        if TILEMAP[new_coords].isclear(movement_mask):
+            return new_coords  # only return if you found a clear tile
     # if no free tiles (100 tries should be enough to find one)...
     return c
 
 
-def find_any_clear_tile(blocking=True):
+def find_any_clear_tile(movement_mask=None):
     coords = (random.randrange(MAP_SIZE), random.randrange(MAP_SIZE))
-    if not TILEMAP[coords].isclear():
+    if not TILEMAP[coords].isclear(movement_mask=movement_mask):
         for j in range(100):
             coords = (random.randrange(MAP_SIZE), random.randrange(MAP_SIZE))
-            if blocking:
-                if TILEMAP[coords].isclear():
-                    return coords
-            else:
-                if TILEMAP[coords].isclear() and not TILEMAP[coords].hasgrass:
-                    return coords
+            if TILEMAP[coords].isclear(movement_mask):
+                return coords
         raise IndexError("Tried to find clear tile, but couldn't!")
     return coords
 
