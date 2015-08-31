@@ -3,7 +3,7 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from tileutils import pixel_to_coord
-
+from globalvars import PLAYER_ENTITIES
 
 
 class Sprite(Image):
@@ -35,6 +35,10 @@ class Tile(Widget):
         self.add_widget(self.bg)
 
     def move_into(self, new_entity):
+        if self._entity and new_entity.id_type == "player" and self._entity.id_type == "dart":
+            global PLAYER_ENTITIES
+            PLAYER_ENTITIES.remove(self._entity)
+            new_entity.remove_widget(self._entity)
         self._entity = new_entity
         if new_entity.id_type == "snake":
             self.snakebod = new_entity

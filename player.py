@@ -44,20 +44,18 @@ class Player(Sprite):
             new_coords = add_coords(self.coords, moves[d])
         except KeyError:
             return self.coords
-        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear(mask="player"):
+        if is_coord_inside_map(new_coords) and TILEMAP[new_coords].isclear(movement_mask="player"):
             return new_coords
         return self.coords
 
     def shoot_dart(self, d):
         global PLAYER_ENTITIES
-        global PLAYER_ENTITIES_INACTIVE
         shots = {
             "i": ["images/arrow_up.png", (0, 1)],
             "j": ["images/arrow_left.png", (-1, 0)],
             "k": ["images/arrow_down.png", (0, -1)],
             "l": ["images/arrow_right.png", (1, 0)]
             }
-
         dart = Dart(shots[d][0], coord_to_pixel(self.coords), shots[d][1])
         self.add_widget(dart)
         dart.update()

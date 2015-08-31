@@ -4,7 +4,6 @@ ENTITY_ID = 1
 ARROW_SPEED = 9999
 ENTITYMAP = {}
 PLAYER_ENTITIES = []
-# PLAYER_ENTITIES_INACTIVE = []
 TILEMAP = {}
 GAMEINFO = {} # playerid, gameinstance
 # REMOVE = []
