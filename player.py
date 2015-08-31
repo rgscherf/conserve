@@ -133,5 +133,5 @@ class Dart(Sprite):
         global TILEMAP
         self.isactive = False
         TILEMAP[coords].stop_dart(self)
-        self.source = "images/grass_long.png"
+        self.source = "images/fence.png"
         return coords
