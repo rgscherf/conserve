@@ -65,11 +65,6 @@ class Player(Sprite):
 
 
 class Dart(Sprite):
-    """
-        When a dart stops, it kills whatever it hit and also forms an impassable wall.
-        Player can walk over fallen darts to collect them.
-    """
-
     def __init__(self, source, pos, direction):
         super(Dart, self).__init__(source=source, pos=pos)
         global TILEMAP
@@ -90,18 +85,13 @@ class Dart(Sprite):
         anim.start(self)
 
         self.coords = new_coords
-        collided = check_for_collision(self, self.coords)
+        collided = check_for_collision(self)
         if collided and not collided.id_type == "dart":
-            collided.die(self.coords)
+            print "dart collided with {}".format(collided.id_type)
+            collided.die(self)
         TILEMAP[self.coords].move_into(self)
 
     def decide_how_far_to_travel(self):
-        """
-            Decide if the dart should stop during its current turn. Cases to stop for:
-            1. New tile is not clear()
-            2. There is a dart in the NEXT tile I would enter.
-            return ( (new coords) , did_I_hit?)
-        """
         if self.direction[0] != 0:
             for x in range(1 * self.dirmod, self.direction[0] + (1 * self.dirmod), self.dirmod):
                 coords_would_be = add_coords(self.coords, (x, 0))

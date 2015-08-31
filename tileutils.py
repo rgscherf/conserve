@@ -110,15 +110,11 @@ def is_coord_inside_map(c):
     return x_inside and y_inside
 
 
-def check_for_collision(me, coords=None):
-    if coords:
-        if me.id_type == "dart":
-            if TILEMAP[coords].snakebod:
-                return TILEMAP[coords].snakebod
-        if TILEMAP[coords]._entity and TILEMAP[coords].id_type != me.id_type and TILEMAP[coords].id_type != "player":
-            return TILEMAP[coords]._entity
-    else:
-        for k, e in ENTITYMAP.items():
-            if me.coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
-                return e
+def check_for_collision(me):
+    if me.id_type == "dart":
+        if TILEMAP[me.coords].snakebod:
+            return TILEMAP[me.coords].snakebod
+    for k, e in ENTITYMAP.items():
+        if me.coords == e.coords and e.id_type != me.id_type and e.id_type != "player":
+            return e
     return None

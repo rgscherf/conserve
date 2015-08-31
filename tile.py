@@ -50,16 +50,12 @@ class Tile(Widget):
         has_player = self._entity.id_type == "player" if has_entity else False
         has_dart = self._entity.id_type == "dart" if has_entity else False
         has_snake = self._entity.id_type == "snake" if has_entity else False
-
         if mask=="predator":
             return (not has_foreground) and not (has_player or has_dart or has_snake)
-        
         elif mask=="flying":
             return not has_foreground and not has_player
-        
         elif mask=="player":
             return True if has_dart else not (has_foreground or has_entity)
-        
         else:
             return not (has_foreground or has_entity)
 

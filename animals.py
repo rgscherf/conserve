@@ -35,7 +35,7 @@ class AIAnimal(Sprite):
     def update(self):
         raise NotImplementedError("no update() defined for {}").format(self.id_type)
 
-    def die(self):
+    def die(self, killer):
         raise NotImplementedError("no die() defined for {}").format(self.id_type)
 
     def find_nearest(self, search_term, search_type="entity"):
@@ -59,12 +59,11 @@ class AIAnimal(Sprite):
 
     def get_astar(self, ent, movement_mask=None):
         new_coords, path = find_next_path_step(self, ent, movement_mask)
-        if path:
-            print "{} moving from {} to {} -- target coords are {} -- path length is {}".format(self, self.coords, new_coords, self.target.coords, len(path))
-        else:
-            print "{} moving to {} -- HAS NO PATH".format(self, new_coords)
+        # if path:
+        #     print "{} moving from {} to {} -- target coords are {} -- path length is {}".format(self, self.coords, new_coords, self.target.coords, len(path))
+        # else:
+        #     print "{} moving to {} -- HAS NO PATH".format(self, new_coords)
         return new_coords
-
 
 
 class Pig(AIAnimal):
@@ -90,13 +89,18 @@ class Pig(AIAnimal):
         anim.start(self)
         TILEMAP[self.coords].move_into(self)
 
-    def die(self):
-        global TILEMAP
-        TILEMAP[self.coords].move_outof()
-        self.color = (1,1,1,0.5)
-        GAMEINFO["gameinstance"].remove_widget(self)
-        GAMEINFO["gameinstance"].add_widget(self)
-        self.isalive = False
+    def die(self, killer):
+        if killer.id_type == "snake":
+            global TILEMAP
+            TILEMAP[self.coords].move_outof()
+            self.color = (1,1,1,0.75)
+            GAMEINFO["gameinstance"].remove_widget(self)
+            GAMEINFO["gameinstance"].add_widget(self)
+            self.isalive = False
+        if killer.id_type == "dart":
+            global ENTITYMAP
+            GAMEINFO["gameinstance"].remove_widget(self)
+            del ENTITYMAP[self.entity_id]
 
 
 class Snake(AIAnimal):
@@ -111,15 +115,6 @@ class Snake(AIAnimal):
         self.digesting = None
 
     def update(self):
-        """ TODO: 
-            DONE add cells to SNAKEBOD as snake moves
-            DONE Snake can't move into a cell occupied by SNAKEBOD
-            DONE SNAKEBOD cells need to block tilemap and need some kind of sprite
-            DONE snakebod needs to lay directional sprites behind it
-            DONE When SNAKEBOD segments are killed, need to convert to trees
-            DONE when eaten, pigs need to be removed() and pass thru snake
-
-        """
         global TILEMAP
         if self.skip_from_prune: # super disorienting not to skip next turn after prune
             self.skip_from_prune = False
@@ -164,7 +159,7 @@ class Snake(AIAnimal):
             return
         collided = check_for_collision(self)
         if collided:
-            collided.die()
+            collided.die(self)
             self.digesting = collided
             self.target = None
         
@@ -183,8 +178,8 @@ class Snake(AIAnimal):
         new_coords = self.get_astar(self.target, movement_mask="predator")
         return new_coords
 
-    def die(self, hitcoord):
-        new_coords, finish_digesting = self.body.prune(hitcoord, self.digesting)
+    def die(self, killer):
+        new_coords, finish_digesting = self.body.prune(killer.coords, self.digesting)
         if finish_digesting:
             self.finish_digesting()
         self.coords = new_coords
