@@ -69,21 +69,21 @@ class AIAnimal(Sprite):
 class Pig(AIAnimal):
     def __init__(self, pos):
         self.id_type = "pig"
-        self.target = None
+        # self.target = None
         super(Pig, self).__init__(source=self.animal_sprites["pig"], pos=pos)
 
     def update(self):
         global TILEMAP
         TILEMAP[self.coords].move_outof()
-        if not self.target:
-            self.target = self.find_nearest("forest", search_type="terrain")
-        new_coords = self.get_astar(self.target)
-        if is_adjacent(self, self.target):
-            self.target.clear_foreground()
-            self.target = None
+        # if not self.target:
+        target = self.find_nearest("forest", search_type="terrain")
+        new_coords = self.get_astar(target)
+        if is_adjacent(self, target):
+            target.clear_foreground()
+            # self.target = None
 
-        new_pixels  = coord_to_pixel(new_coords)
         self.coords = new_coords
+        new_pixels  = coord_to_pixel(self.coords)
         
         anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.1)
         anim.start(self)

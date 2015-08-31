@@ -39,6 +39,7 @@ class Game(Widget):
         self.generate_map()
         self.spawn_feature(feature="forest", numfeatures=int(math.floor((MAP_SIZE**2) / 12)), spawn_chance=0.6)
         self.spawn_feature(feature="water", numfeatures=int(math.floor((MAP_SIZE**2) / 40)), spawn_chance=0.4)
+        self.spawn_feature(feature="mountain", numfeatures=5, spawn_chance=0)
 
         for i in TILEMAP:
             self.add_widget(TILEMAP[i])

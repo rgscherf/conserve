@@ -18,8 +18,7 @@ class Tile(Widget):
         "bg"       : "atlas://images/cell_tiles/background",
         "water"    : "atlas://images/cell_tiles/water",
         "forest"   : "atlas://images/cell_tiles/forest",
-        "grass"    : "images/grass_long.png",
-        "grass_cut": "images/grass_long_cut.png"
+        "mountain" : "images/mountain.png",
         }
 
     def __init__(self, pos):

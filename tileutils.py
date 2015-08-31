@@ -55,13 +55,11 @@ def coord_to_pixel(coordtup):
 def distance_between_tuples(a, b):
     w_square = abs(a[0] - b[0]) ** 2
     h_square = abs(a[1] - b[1]) ** 2
-    return math.sqrt(w_square + h_square)
+    return math.floor(math.sqrt(w_square + h_square))
 
 
 def distance_between_entities(a, b):
-    acenter = a.center
-    bcenter = b.center
-    return distance_between_tuples(acenter, bcenter)
+    return distance_between_tuples(a.coords, b.coords)
 
 
 def is_coord_adjacent(a,b):
