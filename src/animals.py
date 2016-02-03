@@ -1,6 +1,7 @@
 # [sublimelinter pyflakes-@python:2.7]
 
 from kivy.animation import Animation
+from kivy.graphics.vertex_instructions import Line
 
 from globalvars import MAP_SIZE, TILE_SIZE, ENTITY_ID, ENTITYMAP, TILEMAP, GAMEINFO
 from astar import find_next_path_step
@@ -161,7 +162,7 @@ class Snake(AIAnimal):
             self.target = None
         
         new_pixels = coord_to_pixel(self.coords)
-        anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.05)
+        anim = Animation(x=new_pixels[0], y=new_pixels[1], duration=0.001)
         anim.start(self)
 
         GAMEINFO["gameinstance"].remove_widget(self)
