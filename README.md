@@ -1,7 +1,3 @@
-# Super Conservation Officer (SCO)
-
-A prototype for Ludum Dare 33.
-
 ## Overview
 
 SCO is a puzzle-y roguelike. You play as a conservation officer, trying to balance an ecosystem of AI animals. Each type of animal has different behaviors and a different place in the food web.
