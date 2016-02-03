@@ -1,6 +1,6 @@
 # Super Conservation Officer (SCO)
 
-It needs a better name.
+A prototype for Ludum Dare 33.
 
 ## Overview
 
